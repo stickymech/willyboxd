@@ -6,7 +6,7 @@ import type { User } from "@willyboxd/shared";
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
   register: (email: string, username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -22,10 +22,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     staleTime: 5 * 60 * 1000,
   });
 
-  const login = async (email: string, password: string) => {
+  const login = async (identifier: string, password: string) => {
     await apiFetch(API_ENDPOINTS.auth.login, {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ identifier, password }),
     });
     queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
   };

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#EAB308"/>
+  <defs>
+    <clipPath id="brand-stripes">
+      <rect x="144" y="80" width="224" height="352" rx="56"/>
+    </clipPath>
+  </defs>
+  <g fill="#0F172A">
+    <rect x="144" y="80" width="224" height="352" rx="56"/>
+  </g>
+  <g clip-path="url(#brand-stripes)" stroke="#EAB308" stroke-width="48" stroke-linecap="round">
+    <line x1="152" y1="192" x2="248" y2="96"/>
+    <line x1="272" y1="192" x2="368" y2="96"/>
+  </g>
+</svg>

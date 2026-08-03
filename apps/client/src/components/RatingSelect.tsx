@@ -20,7 +20,7 @@ export function RatingSelect({ value, onChange, size = "md" }: RatingSelectProps
           key={r}
           type="button"
           onClick={() => onChange?.(value === r ? undefined : r)}
-          className={`rating-star ${value === r ? "text-amber-400" : "text-slate-600 hover:text-amber-400"} transition-colors ${sizeClasses[size]}`}
+          className={`rating-star ${value === r ? "text-accent" : "text-text-subtle hover:text-accent"} transition-colors ${sizeClasses[size]}`}
         >
           {ratingLabel(r)}
         </button>
@@ -29,7 +29,7 @@ export function RatingSelect({ value, onChange, size = "md" }: RatingSelectProps
         <button
           type="button"
           onClick={() => onChange?.(undefined)}
-          className={`rating-star text-slate-600 ${sizeClasses[size]}`}
+          className={`rating-star text-text-subtle ${sizeClasses[size]}`}
         >
           Clear
         </button>

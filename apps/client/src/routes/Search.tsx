@@ -35,7 +35,7 @@ export function Search() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value as string)}
               placeholder="Search for films or TV shows..."
-              className="flex-1 px-4 py-2 bg-slate-800 border border-slate-700 rounded text-white focus:outline-none focus:border-amber-400"
+              className="flex-1 px-4 py-2 bg-surface border border-border rounded text-text focus:outline-none focus:border-accent"
             />
             <button type="submit" className="btn btn-primary">
               Search
@@ -44,13 +44,13 @@ export function Search() {
         </form>
 
         {query && (
-          <h2 className="text-lg font-semibold mb-4 text-white">
+          <h2 className="text-lg font-semibold mb-4 text-text">
             Results for "{query}"
           </h2>
         )}
 
         {isFetching ? (
-          <p className="text-slate-400">Searching...</p>
+          <p className="text-text-subtle">Searching...</p>
         ) : data && data.results?.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
             {data.results.map((film) => (
@@ -58,9 +58,9 @@ export function Search() {
             ))}
           </div>
         ) : query ? (
-          <p className="text-slate-400">No results found.</p>
+          <p className="text-text-subtle">No results found.</p>
         ) : (
-          <p className="text-slate-400">Enter a search term above.</p>
+          <p className="text-text-subtle">Enter a search term above.</p>
         )}
       </main>
     </>

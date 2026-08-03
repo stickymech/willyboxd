@@ -1,0 +1,25 @@
+schema: spec-driven
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+context: |
+  Monorepo: Turborepo + npm workspaces
+    - apps/client: Vite + React + Tailwind CSS
+    - apps/server: Hono + SQLite (better-sqlite3)
+    - packages/shared: types, Zod schemas, constants
+  Language: TypeScript strict
+  UI conventions: hardcoded Tailwind palette (slate-900 bg, slate-800 cards, amber-400 accent), semantic design tokens planned
+  Repo: https://github.com/stickymech/willyboxd (branch phase-1-release, PR #2, issue #1)
+  Quality: `npm run lint && npm run typecheck && npm run test && npm run build` all green locally
+  Hobby project - YAGNI, standard tdd/git/publish model, no over-engineered CI
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
