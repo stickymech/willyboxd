@@ -35,6 +35,6 @@
 
 ## 6. Release & GitHub sync
 
-- [ ] 6.1 Commit work on `phase-1-release` and push
-- [ ] 6.2 Update PR #2 with before/after + theme QA steps; keep issue #1 linked
+- [x] 6.1 Commit work on `phase-1-release` and push
+- [x] 6.2 Update PR #2 with before/after + theme QA steps; keep issue #1 linked
 - [ ] 6.3 Merge PR #2 to `main` and close issue #1 (with user go-ahead)
