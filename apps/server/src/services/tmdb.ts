@@ -32,7 +32,12 @@ function waitForRateLimit(): Promise<void> {
 
       setTimeout(() => {
         lastRequestTime = Date.now();
-        processing = false;
+        const next = requestQueue.shift();
+        if (next) {
+          next();
+        } else {
+          processing = false;
+        }
         resolve();
       }, wait);
     };

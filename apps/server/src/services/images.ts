@@ -12,8 +12,8 @@ if (!fs.existsSync(IMAGE_CACHE_DIR)) {
 export const imageProxy = new Hono();
 
 imageProxy.get("*", async (c) => {
-  const imagePath = c.req.path.replace("/api/images", "");
-  if (!imagePath || imagePath.startsWith("/")) {
+  const imagePath = c.req.path.replace(/^\/api\/images/, "");
+  if (!imagePath || !imagePath.startsWith("/")) {
     return c.json({ error: "Image path required" }, 400);
   }
 
