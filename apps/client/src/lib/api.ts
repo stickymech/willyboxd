@@ -49,6 +49,7 @@ export const API_ENDPOINTS = {
     search: "/films/search",
     popular: "/films/popular",
     trending: "/films/trending",
+    anime: "/films/anime",
     detail: (id: number) => `/films/${id}`,
     recommendations: (id: number) => `/films/${id}/recommendations`,
   },

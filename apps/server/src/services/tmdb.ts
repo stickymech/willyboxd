@@ -96,6 +96,7 @@ export interface TmdbMediaItem {
   overview: string;
   release_date?: string;
   first_air_date?: string;
+  original_language?: string;
   vote_average: number;
   genre_ids: number[];
   origin_title?: string;
@@ -115,6 +116,7 @@ export interface TmdbMovieDetail {
   budget: number;
   revenue: number;
   status: string;
+  original_language?: string;
 }
 
 export interface TmdbTvDetail {
@@ -130,6 +132,7 @@ export interface TmdbTvDetail {
   number_of_episodes: number;
   last_air_date: string | null;
   status: string;
+  original_language?: string;
 }
 
 export interface TmdbGenre {
@@ -176,6 +179,7 @@ function normalizeMediaItem(item: TmdbMediaItem): MediaItem {
     overview: item.overview,
     release_date: item.release_date || null,
     first_air_date: item.first_air_date || null,
+    original_language: item.original_language || null,
     vote_average: item.vote_average,
     genre_ids: item.genre_ids,
   };
@@ -192,6 +196,39 @@ export const tmdbService = {
 
   getPopular(type: "movie" | "tv", page: number = 1): Promise<{ results: TmdbMediaItem[] }> {
     return fetchFromApi<{ results: TmdbMediaItem[] }>(`${type}/popular`, { page });
+  },
+
+  async getAnime(timeWindow: "day" | "week" | undefined, page: number = 1): Promise<MediaItem[]> {
+    const baseQuery: Record<string, string | number> = {
+      with_keywords: "210024",
+      sort_by: "popularity.desc",
+      page,
+    };
+
+    const dateFilter: Record<string, string> = {};
+    if (timeWindow) {
+      const days = timeWindow === "week" ? 7 : 1;
+      const gte = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      dateFilter[`first_air_date.gte`] = gte;
+    }
+
+    const [movies, tv] = await Promise.all([
+      fetchFromApi<{ results: TmdbMediaItem[] }>("discover/movie", {
+        ...baseQuery,
+        ...(dateFilter["first_air_date.gte"] ? { "primary_release_date.gte": dateFilter["first_air_date.gte"] } : {}),
+      }),
+      fetchFromApi<{ results: TmdbMediaItem[] }>("discover/tv", { ...baseQuery, ...dateFilter }),
+    ]);
+
+    const seen = new Set<number>();
+    return [...movies.results, ...tv.results]
+      .filter((item) => item.media_type !== "person")
+      .filter((item) => {
+        if (seen.has(item.id)) return false;
+        seen.add(item.id);
+        return true;
+      })
+      .map(normalizeMediaItem);
   },
 
   async getDetail(id: number, type: "movie" | "tv"): Promise<FilmDetail> {
@@ -214,6 +251,7 @@ export const tmdbService = {
       overview: detail.overview,
       release_date: isMovie ? movieDetail.release_date : null,
       first_air_date: isMovie ? null : tvDetail.first_air_date,
+      original_language: detail.original_language || null,
       vote_average: detail.vote_average,
       genre_ids: detail.genres.map((g) => g.id),
       runtime: isMovie ? movieDetail.runtime : null,

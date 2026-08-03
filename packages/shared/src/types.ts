@@ -7,6 +7,7 @@ export type MediaItem = {
   overview: string | null;
   release_date: string | null;
   first_air_date: string | null;
+  original_language: string | null;
   vote_average: number;
   genre_ids: number[];
 };

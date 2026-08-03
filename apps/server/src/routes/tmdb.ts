@@ -5,16 +5,32 @@ export const tmdbRoutes = (app: Hono) => {
   app.get("/films/search", async (c) => {
     const query = c.req.query("q");
     const page = parseInt(c.req.query("page") || "1");
+    const anime = c.req.query("anime") === "1";
 
     if (!query) {
       return c.json({ error: "Query parameter 'q' is required" }, 400);
     }
 
     try {
-      const results = await tmdbService.searchMulti(query, page);
+      let results = await tmdbService.searchMulti(query, page);
+      if (anime) {
+        results = results.filter((item) => item.original_language === "ja");
+      }
       return c.json({ results, page });
     } catch {
       return c.json({ error: "Failed to search films" }, 500);
+    }
+  });
+
+  app.get("/films/anime", async (c) => {
+    const time = c.req.query("time") as "day" | "week" | undefined;
+    const page = parseInt(c.req.query("page") || "1");
+
+    try {
+      const results = await tmdbService.getAnime(time, page);
+      return c.json({ results, page });
+    } catch {
+      return c.json({ error: "Failed to fetch anime" }, 500);
     }
   });
 

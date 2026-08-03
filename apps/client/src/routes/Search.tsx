@@ -9,19 +9,28 @@ import { Header } from "../components/Header";
 export function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
+  const anime = searchParams.get("anime") === "1";
   const [inputValue, setInputValue] = useState(query);
 
   const { data, isFetching } = useQuery({
-    queryKey: ["search", query],
+    queryKey: ["search", query, anime],
     queryFn: () =>
-      query ? apiFetch<{ results: MediaItem[] }>(`${API_ENDPOINTS.films.search}?q=${encodeURIComponent(query)}`) : null,
+      query
+        ? apiFetch<{ results: MediaItem[] }>(
+            `${API_ENDPOINTS.films.search}?q=${encodeURIComponent(query)}${anime ? "&anime=1" : ""}`,
+          )
+        : null,
     staleTime: 5 * 60 * 1000,
     enabled: !!query,
   });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setSearchParams({ q: inputValue });
+    setSearchParams({ q: inputValue, ...(anime ? { anime: "1" } : {}) });
+  };
+
+  const toggleAnime = () => {
+    setSearchParams({ q: query, ...(anime ? {} : { anime: "1" }) });
   };
 
   return (
@@ -41,11 +50,22 @@ export function Search() {
               Search
             </button>
           </div>
+          <label className="mt-3 flex items-center gap-2 text-sm text-text-subtle cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={anime}
+              onChange={toggleAnime}
+              aria-label="Anime only"
+              className="h-4 w-4 rounded border-border bg-surface focus:outline-none focus:border-accent"
+              style={{ accentColor: "var(--color-accent)" }}
+            />
+            Anime only
+          </label>
         </form>
 
         {query && (
           <h2 className="text-lg font-semibold mb-4 text-text">
-            Results for "{query}"
+            Results for "{query}"{anime ? " (anime)" : ""}
           </h2>
         )}
 
