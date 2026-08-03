@@ -1,6 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { ThemeSwitcher } from "./ThemeSwitcher";
+import { BrandMark } from "./BrandMark";
 
 export function Header() {
   const { user, isLoading, logout } = useAuth();
@@ -11,8 +12,9 @@ export function Header() {
   return (
     <header className="bg-bg border-b border-border">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold text-accent">
-          Willyboxd
+        <Link to="/" className="flex items-center gap-2 text-accent">
+          <BrandMark className="w-7 h-7" />
+          <span className="text-xl font-bold">Willyboxd</span>
         </Link>
 
         <nav className="flex items-center gap-6">

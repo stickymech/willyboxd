@@ -79,11 +79,11 @@ export function registerAuthRoutes(app: Hono) {
       return c.json({ error: "Validation failed", details: parsed.error.errors }, 400);
     }
 
-    const { email, password } = parsed.data;
+    const { identifier, password } = parsed.data;
 
     const user = db
-      .prepare("SELECT id, email, username, password_hash, avatar FROM users WHERE email = ?")
-      .get(email) as {
+      .prepare("SELECT id, email, username, password_hash, avatar FROM users WHERE email = ? OR username = ?")
+      .get(identifier, identifier) as {
       id: string;
       email: string;
       username: string;

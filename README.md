@@ -72,6 +72,7 @@ willyboxd/
 - **Film Discovery**: Search (movies + TV), popular, trending
 - **Film Details**: Posters, cast, crew, images, runtime, genres
 - **Image Proxy**: Backend image caching to conserve TMDB API quota
+- **Branding**: "clapperboard at attention" product mark — favicon, header + auth-page logo, PWA manifest/launcher icons, OG social meta
 
 ### Roadmap
 - Diary / film logging with ratings and reviews

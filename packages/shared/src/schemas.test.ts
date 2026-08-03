@@ -19,7 +19,9 @@ describe("Schema Validation", () => {
   });
 
   test("valid login schema", () => {
-    expect(LoginSchema.safeParse({ email: "test@test.com", password: "password123" }).success).toBe(true);
+    expect(LoginSchema.safeParse({ identifier: "test@test.com", password: "password123" }).success).toBe(true);
+    expect(LoginSchema.safeParse({ identifier: "testuser", password: "password123" }).success).toBe(true);
+    expect(LoginSchema.safeParse({ identifier: "", password: "password123" }).success).toBe(false);
   });
 
   test("rating validates 0.5 steps", () => {

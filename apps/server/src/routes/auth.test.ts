@@ -87,7 +87,7 @@ describe("Auth Routes", () => {
 
     const res = await app.request("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email: "login@test.com", password: "password123" }),
+      body: JSON.stringify({ identifier: "login@test.com", password: "password123" }),
       headers: { "Content-Type": "application/json" },
     });
     expect(res.status).toBe(200);
@@ -96,6 +96,37 @@ describe("Auth Routes", () => {
 
     const cookies = res.headers.get("Set-Cookie");
     expect(cookies).toContain("willyboxd_session");
+  });
+
+  test("login with username works", async () => {
+    app = createTestApp();
+    await app.request("/auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        email: "username@test.com",
+        username: "usernameuser",
+        password: "password123",
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const res = await app.request("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ identifier: "usernameuser", password: "password123" }),
+      headers: { "Content-Type": "application/json" },
+    });
+    expect(res.status).toBe(200);
+    const data = await res.json() as { user: { email: string } };
+    expect(data.user.email).toBe("username@test.com");
+  });
+
+  test("login fails with unknown identifier", async () => {
+    const res = await app.request("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ identifier: "nobody@example.com", password: "password123" }),
+      headers: { "Content-Type": "application/json" },
+    });
+    expect(res.status).toBe(401);
   });
 
   test("login fails with wrong password", async () => {
@@ -112,7 +143,7 @@ describe("Auth Routes", () => {
 
     const res = await app.request("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email: "wrongpw@test.com", password: "wrong" }),
+      body: JSON.stringify({ identifier: "wrongpw@test.com", password: "wrong" }),
       headers: { "Content-Type": "application/json" },
     });
     expect(res.status).toBe(401);
@@ -120,15 +151,22 @@ describe("Auth Routes", () => {
 
   test("logout clears session", async () => {
     app = createTestApp();
-    const loginRes = await app.request("/auth/login", {
+    await app.request("/auth/register", {
       method: "POST",
       body: JSON.stringify({
-        email: "login@test.com",
-        username: "loginuser",
+        email: "logout@test.com",
+        username: "logoutuser",
         password: "password123",
       }),
       headers: { "Content-Type": "application/json" },
     });
+
+    const loginRes = await app.request("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ identifier: "logoutuser", password: "password123" }),
+      headers: { "Content-Type": "application/json" },
+    });
+    expect(loginRes.status).toBe(200);
 
     const cookie = loginRes.headers.get("Set-Cookie")?.split(";")[0] || "";
 
