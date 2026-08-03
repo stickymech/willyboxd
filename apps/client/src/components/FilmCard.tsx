@@ -11,7 +11,7 @@ export function FilmCard({ film }: FilmCardProps) {
 
   return (
     <Link to={`/films/${film.id}`} className="block group">
-      <div className="relative aspect-[2/3] bg-slate-800 rounded-lg overflow-hidden mb-2">
+      <div className="relative aspect-[2/3] bg-surface rounded-lg overflow-hidden mb-2 shadow-card">
         {posterUrl ? (
           <img
             src={posterUrl}
@@ -20,20 +20,20 @@ export function FilmCard({ film }: FilmCardProps) {
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-600">
+          <div className="w-full h-full flex items-center justify-center text-text-subtle">
             No image
           </div>
         )}
         {film.vote_average > 0 && (
-          <div className="absolute top-1 right-1 bg-slate-800/80 backdrop-blur rounded-full px-1.5 py-0.5 text-xs text-amber-400">
+          <div className="absolute top-1 right-1 bg-surface/80 backdrop-blur rounded-full px-1.5 py-0.5 text-xs text-accent">
             ★ {film.vote_average.toFixed(1)}
           </div>
         )}
       </div>
-      <h3 className="text-sm font-medium text-white group-hover:text-amber-400 transition-colors">
+      <h3 className="text-sm font-medium text-text group-hover:text-accent transition-colors">
         {film.title}
       </h3>
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-text-subtle">
         {film.release_date?.slice(0, 4) || film.first_air_date?.slice(0, 4) || ""}
       </p>
     </Link>

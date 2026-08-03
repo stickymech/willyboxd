@@ -40,21 +40,21 @@ export function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900">
+    <div className="min-h-screen flex items-center justify-center bg-bg">
       <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-8 text-white">Create Account</h1>
+        <h1 className="text-3xl font-bold text-center mb-8 text-text">Create Account</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Email</label>
+            <label className="block text-sm font-medium text-text-muted mb-1">Email</label>
             <input
               type="email"
               name="email"
               required
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white focus:outline-none focus:border-amber-400"
+              className="w-full px-3 py-2 bg-surface border border-border rounded text-text focus:outline-none focus:border-accent"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Username</label>
+            <label className="block text-sm font-medium text-text-muted mb-1">Username</label>
             <input
               type="text"
               name="username"
@@ -62,20 +62,20 @@ export function Register() {
               minLength={3}
               maxLength={30}
               pattern="[a-zA-Z0-9_-]+"
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white focus:outline-none focus:border-amber-400"
+              className="w-full px-3 py-2 bg-surface border border-border rounded text-text focus:outline-none focus:border-accent"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Password</label>
+            <label className="block text-sm font-medium text-text-muted mb-1">Password</label>
             <input
               type="password"
               name="password"
               required
               minLength={8}
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white focus:outline-none focus:border-amber-400"
+              className="w-full px-3 py-2 bg-surface border border-border rounded text-text focus:outline-none focus:border-accent"
             />
           </div>
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && <p className="text-error text-sm">{error}</p>}
           <button
             type="submit"
             disabled={isLoading}
@@ -84,9 +84,9 @@ export function Register() {
             {isLoading ? "Creating account..." : "Sign Up"}
           </button>
         </form>
-        <p className="text-center text-slate-400 mt-4 text-sm">
+        <p className="text-center text-text-subtle mt-4 text-sm">
           Already have an account?{" "}
-          <Link to="/login" className="text-amber-400 hover:text-amber-300">
+          <Link to="/login" className="text-accent hover:text-accent-hover">
             Sign in
           </Link>
         </p>

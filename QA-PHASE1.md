@@ -99,6 +99,17 @@ Manual testing steps for the Phase 1 release of willyboxd.
 - [ ] Clear button appears when value is selected
 - [ ] Clear button calls `onChange(undefined)`
 
+### 2.9 Theme switching
+- [ ] Header shows a theme switcher (settings icon) with 4 options, each with a preview dot
+- [ ] Switching to Classic Amber shows the default dark-slate / amber palette
+- [ ] Switching to Spotify shows near-black surfaces, green accent, pill-shaped buttons, heavy card shadows
+- [ ] Switching to Runway shows pure black background, zero shadows, cool-neutral accent, small radius
+- [ ] Switching to Linear shows hairline borders, lavender accent, 8-12px radius
+- [ ] All four themes render on Home, Search, Login, Register, FilmDetail, Diary, Watchlist
+- [ ] Selected theme persists after a full page reload
+- [ ] Buttons, links, ratings, and input focus states use the active theme's accent color
+- [ ] Brand "Willyboxd" appears only in the Header (Home no longer shows a duplicate heading)
+
 ## 3. Database & Files
 
 ### 3.1 Database
@@ -120,7 +131,7 @@ Manual testing steps for the Phase 1 release of willyboxd.
 
 - [ ] `npm run lint` passes with no errors
 - [ ] `npm run typecheck` passes with no errors
-- [ ] `npm run test` — all 26 tests pass
+- [ ] `npm run test` — all 28 tests pass (shared 15, server 8, client 5)
 - [ ] `npm run build` builds all packages successfully
 
 ## 6. Edge Cases & Cleanup

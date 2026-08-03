@@ -21,8 +21,6 @@ export function Home() {
     <>
       <Header />
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">Willyboxd</h1>
-
         <section className="mb-12">
           <h2 className="text-xl font-semibold mb-4">Trending This Week</h2>
           {trending ? (
@@ -32,7 +30,7 @@ export function Home() {
               ))}
             </div>
           ) : (
-            <p className="text-slate-500">Loading...</p>
+            <p className="text-text-subtle">Loading...</p>
           )}
         </section>
 
@@ -45,7 +43,7 @@ export function Home() {
               ))}
             </div>
           ) : (
-            <p className="text-slate-500">Loading...</p>
+            <p className="text-text-subtle">Loading...</p>
           )}
         </section>
       </main>

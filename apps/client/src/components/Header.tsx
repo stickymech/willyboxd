@@ -1,49 +1,35 @@
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../lib/auth";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 
 export function Header() {
   const { user, isLoading, logout } = useAuth();
 
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    isActive ? "text-accent" : "text-text-subtle hover:text-text transition-colors";
+
   return (
-    <header className="bg-slate-900 border-b border-slate-800">
+    <header className="bg-bg border-b border-border">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold text-amber-400">
+        <Link to="/" className="text-xl font-bold text-accent">
           Willyboxd
         </Link>
 
         <nav className="flex items-center gap-6">
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              isActive ? "text-amber-400" : "text-slate-400 hover:text-white transition-colors"
-            }
-          >
+          <NavLink to="/" className={navLinkClass}>
             Home
           </NavLink>
-          <NavLink
-            to="/search"
-            className={({ isActive }) =>
-              isActive ? "text-amber-400" : "text-slate-400 hover:text-white transition-colors"
-            }
-          >
+          <NavLink to="/search" className={navLinkClass}>
             Search
           </NavLink>
-          <NavLink
-            to="/diary"
-            className={({ isActive }) =>
-              isActive ? "text-amber-400" : "text-slate-400 hover:text-white transition-colors"
-            }
-          >
+          <NavLink to="/diary" className={navLinkClass}>
             Diary
           </NavLink>
-          <NavLink
-            to="/watchlist"
-            className={({ isActive }) =>
-              isActive ? "text-amber-400" : "text-slate-400 hover:text-white transition-colors"
-            }
-          >
+          <NavLink to="/watchlist" className={navLinkClass}>
             Watchlist
           </NavLink>
+
+          <ThemeSwitcher />
 
           {isLoading ? null : user ? (
             <div className="flex items-center gap-3">
@@ -59,7 +45,7 @@ export function Header() {
               </Link>
               <button
                 onClick={() => logout()}
-                className="text-sm text-slate-400 hover:text-white"
+                className="text-sm text-text-subtle hover:text-text"
               >
                 Logout
               </button>

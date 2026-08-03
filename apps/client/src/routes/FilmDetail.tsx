@@ -23,7 +23,7 @@ export function FilmDetail() {
       <>
         <Header />
         <main className="container mx-auto px-4 py-8">
-          <p className="text-slate-400">Loading...</p>
+          <p className="text-text-subtle">Loading...</p>
         </main>
       </>
     );
@@ -49,20 +49,20 @@ export function FilmDetail() {
                 className="w-48 h-72 object-cover rounded-lg shadow-xl"
               />
             )}
-            <div className="text-white">
+            <div className="text-text">
               <h1 className="text-3xl font-bold">{film.title}</h1>
-              <p className="text-slate-400 mt-2">
+              <p className="text-text-subtle mt-2">
                 {film.release_date?.slice(0, 4)} • {film.type === "movie" ? "Film" : "TV Series"}
               </p>
               <div className="flex items-center gap-2 mt-3">
-                <span className="text-amber-400">★</span>
+                <span className="text-accent">★</span>
                 <span>{film.vote_average.toFixed(1)}</span>
               </div>
               {film.runtime && (
-                <p className="text-slate-300 mt-2">{film.runtime} minutes</p>
+                <p className="text-text-muted mt-2">{film.runtime} minutes</p>
               )}
               {film.overview && (
-                <p className="text-slate-300 mt-4 max-w-2xl">{film.overview}</p>
+                <p className="text-text-muted mt-4 max-w-2xl">{film.overview}</p>
               )}
             </div>
           </div>
@@ -75,10 +75,10 @@ export function FilmDetail() {
 
         {film.genres.length > 0 && (
           <div className="mt-6">
-            <h3 className="text-lg font-semibold text-white mb-2">Genres</h3>
+            <h3 className="text-lg font-semibold text-text mb-2">Genres</h3>
             <div className="flex flex-wrap gap-2">
               {film.genres.map((g) => (
-                <span key={g.id} className="px-3 py-1 bg-slate-800 rounded-full text-sm">
+                <span key={g.id} className="px-3 py-1 bg-surface rounded-full text-sm">
                   {g.name}
                 </span>
               ))}
@@ -88,13 +88,13 @@ export function FilmDetail() {
 
         {film.credits.cast.length > 0 && (
           <div className="mt-8">
-            <h3 className="text-lg font-semibold text-white mb-4">Cast</h3>
+            <h3 className="text-lg font-semibold text-text mb-4">Cast</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
               {film.credits.cast.map((c) => (
                 <div key={c.id} className="text-center">
-                  <div className="w-16 h-24 mx-auto bg-slate-800 rounded mb-1"></div>
-                  <p className="text-sm text-white">{c.name}</p>
-                  <p className="text-xs text-slate-500">{c.character}</p>
+                  <div className="w-16 h-24 mx-auto bg-surface rounded mb-1"></div>
+                  <p className="text-sm text-text">{c.name}</p>
+                  <p className="text-xs text-text-subtle">{c.character}</p>
                 </div>
               ))}
             </div>
