@@ -13,13 +13,28 @@ import { socialRoutes } from "./routes/social";
 import { statsRoutes } from "./routes/stats";
 import { imageProxy } from "./services/images";
 
+const clientOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+const isLocalhost = (origin: string) =>
+  /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+
 const app = new Hono();
 
 app.use("*", logger());
 app.use(
   "*",
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: (origin) => {
+      if (!origin) return undefined;
+      if (clientOrigins.includes(origin)) return origin;
+      if (process.env.NODE_ENV !== "production" && isLocalhost(origin)) {
+        return origin;
+      }
+      return undefined;
+    },
     credentials: true,
   }),
 );

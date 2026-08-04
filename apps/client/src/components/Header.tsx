@@ -11,13 +11,13 @@ export function Header() {
 
   return (
     <header className="bg-bg border-b border-border">
-      <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 text-accent">
-          <BrandMark className="w-7 h-7" />
-          <span className="text-xl font-bold">Willyboxd</span>
+      <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+        <Link to="/" className="flex items-center gap-3 text-accent">
+          <BrandMark className="w-28 h-14" />
+          <span className="text-4xl md:text-5xl font-bold tracking-tight">Willyboxd</span>
         </Link>
 
-        <nav className="flex items-center gap-6">
+        <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
           <NavLink to="/" className={navLinkClass}>
             Home
           </NavLink>

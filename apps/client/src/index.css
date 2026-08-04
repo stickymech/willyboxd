@@ -127,7 +127,4 @@
   .btn-secondary {
     @apply bg-surface-2 text-text hover:bg-border;
   }
-  .rating-star {
-    @apply text-accent;
-  }
 }

@@ -32,14 +32,25 @@ export type LoginInput = z.infer<typeof LoginSchema>;
 
 export const DiaryEntrySchema = z.object({
   film_id: z.number().int().positive(),
+  type: z.enum(["movie", "tv"]).default("movie"),
   watched_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Date must be YYYY-MM-DD" }),
-  rating: Rating.optional(),
-  review: z.string().max(5000, { message: "Review must be at most 5000 characters" }).optional(),
+  rating: Rating.optional().nullable(),
+  review: z.string().max(5000, { message: "Review must be at most 5000 characters" }).optional().nullable(),
   rewatch: z.boolean().default(false),
   tags: z.array(z.string().min(1)).max(20, { message: "Maximum 20 tags" }).default([]),
 });
 
 export type DiaryEntryInput = z.infer<typeof DiaryEntrySchema>;
+
+export const DiaryUpdateSchema = z.object({
+  watched_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Date must be YYYY-MM-DD" }).optional(),
+  rating: Rating.optional().nullable(),
+  review: z.string().max(5000, { message: "Review must be at most 5000 characters" }).optional().nullable(),
+  rewatch: z.boolean().optional(),
+  tags: z.array(z.string().min(1)).max(20, { message: "Maximum 20 tags" }).optional(),
+});
+
+export type DiaryUpdateInput = z.infer<typeof DiaryUpdateSchema>;
 
 export const CommentSchema = z.object({
   content: z

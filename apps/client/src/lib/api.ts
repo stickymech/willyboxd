@@ -62,7 +62,8 @@ export const API_ENDPOINTS = {
   },
   watchlist: {
     list: "/watchlist",
-    add: (filmId: number) => `/watchlist/${filmId}`,
+    add: (filmId: number, type?: string) =>
+      `/watchlist/${filmId}${type ? `?type=${type}` : ""}`,
     remove: (filmId: number) => `/watchlist/${filmId}`,
   },
   lists: {
