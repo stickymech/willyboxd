@@ -53,7 +53,7 @@ export function Diary() {
             {data.entries.map((entry) => (
               <li key={entry.id} className="py-4 flex items-start gap-4">
                 {entry.film && (
-                  <Link to={`/films/${entry.film.id}`} className="shrink-0">
+                   <Link to={`/films/${entry.film.id}?type=${entry.film?.type || "movie"}`} className="shrink-0">
                     <img
                       src={getPosterUrl(entry.film.poster_path, "small") || "/placeholder-poster.jpg"}
                       alt={entry.film.title}
@@ -71,10 +71,10 @@ export function Diary() {
                     )}
                   </div>
                   {entry.film && (
-                    <Link
-                      to={`/films/${entry.film.id}`}
-                      className="text-lg font-semibold text-text hover:text-accent"
-                    >
+                     <Link
+                       to={`/films/${entry.film.id}?type=${entry.film?.type || "movie"}`}
+                       className="text-lg font-semibold text-text hover:text-accent"
+                     >
                       {entry.film.title}
                     </Link>
                   )}

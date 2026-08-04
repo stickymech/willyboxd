@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useSearchParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, API_ENDPOINTS } from "../lib/api";
 import type { FilmDetail, DiaryEntry, WatchlistEntry } from "@willyboxd/shared";
@@ -15,7 +15,8 @@ function today(): string {
 export function FilmDetail() {
   const { id } = useParams<{ id: string }>();
   const filmId = parseInt(id || "");
-  const type = "movie";
+  const [searchParams] = useSearchParams();
+  const type = (searchParams.get("type") as "movie" | "tv") || "movie";
   const { user } = useAuth();
   const queryClient = useQueryClient();
 

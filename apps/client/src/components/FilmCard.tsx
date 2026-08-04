@@ -10,7 +10,7 @@ export function FilmCard({ film }: FilmCardProps) {
   const posterUrl = getPosterUrl(film.poster_path, "small");
 
   return (
-    <Link to={`/films/${film.id}`} className="block group">
+    <Link to={`/films/${film.id}?type=${film.type}`} className="block group">
       <div className="relative aspect-[2/3] bg-surface rounded-lg overflow-hidden mb-2 shadow-card">
         {posterUrl ? (
           <img
