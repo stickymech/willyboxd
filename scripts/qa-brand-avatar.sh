@@ -2,8 +2,8 @@
 # QA script for the brand-mark-v3 (static assets) + avatar-display-fix changes.
 #
 # It runs the automated, scriptable checks (asset sizes/geometry, no stale
-# raw-email gravatar or dead placeholder references, hashing unit test) and then
-# prints the manual browser steps you must verify by eye. Designed for macOS.
+# gravatar or dead placeholder references) and then prints the manual browser
+# steps you must verify by eye. Designed for macOS.
 #
 #   Usage: ./scripts/qa-brand-avatar.sh
 #
@@ -72,23 +72,17 @@ grep -q 'favicon-16x16.png' "$ROOT/apps/client/index.html" && check ok "index.ht
 echo
 echo "=== 2. Avatar code path (automated) ==="
 
-# No raw-email gravatar URL left in the header.
-if grep -q 'gravatar.com/avatar/${user.email}' "$ROOT/apps/client/src/components/Header.tsx"; then
-  check no "Header still builds a raw-email gravatar URL"
-else
-  check ok "Header no longer embeds raw email in gravatar URL"
-fi
 # No dead via.placeholder.com reference anywhere.
 if grep -rIl "via.placeholder.com" "$ROOT/apps/client/src" >/dev/null 2>&1; then
   check no "client src still references dead via.placeholder.com"
 else
   check ok "no via.placeholder.com references remain in client src"
 fi
-# Shared hashing helper gets exercised.
-if (cd "$ROOT/packages/shared" && npx vitest run src/constants.test.ts -t "hashes the email" >/dev/null 2>&1); then
-  check ok "getProfileImageUrl hashing test passes"
+# Gravatar is fully dropped: uploaded avatar -> placeholder only.
+if grep -rIn "gravatar.com\|getProfileImageUrl\|js-md5" "$ROOT/apps/client/src" "$ROOT/packages/shared/src" >/dev/null 2>&1; then
+  check no "Gravatar references remain in client/shared src"
 else
-  check no "getProfileImageUrl hashing test passes (run 'npm run test' for full output)"
+  check ok "no gravatar.com / getProfileImageUrl / js-md5 references remain"
 fi
 
 echo
@@ -114,23 +108,22 @@ echo "  [C] OG / social"
 echo "      - Open Graph image (og.png) is 1200x630 ink canvas + larger disc-trio"
 echo "        + amber 'Willyboxd' wordmark (no amber slab box)."
 echo
-echo "  [D] User avatar (the breakage under test)"
-echo "      - Register/log in with an email that HAS a Gravatar (e.g. your GitHub"
-echo "        email) -> header shows that Gravatar, no broken-image icon."
-echo "      - Inspect the <img>: src is https://www.gravatar.com/avatar/<md5hash>?s=32&d=404"
-echo "        and the RAW email must NOT appear anywhere in the src."
-echo "      - Register/log in with an email that has NO Gravatar -> the image"
-echo "        404s once and falls back to /placeholder-avatar.svg (ink tile + slate"
-echo "        silhouette), still no broken-image icon."
-echo "      - (Future) if a User ever has an uploaded avatar URL it wins over Gravatar."
+echo "  [D] User avatar (placeholder-only fallback, no Gravatar)"
+echo "      - Register/log in with NO uploaded avatar -> header + settings show"
+echo "        /placeholder-avatar.svg (ink tile + slate silhouette), no broken-image icon."
+echo "      - Gravatar is fully removed: no request to gravatar.com is ever made,"
+echo "        and the raw email never appears in any avatar <img> src."
+echo "      - Upload an avatar -> the uploaded image wins over the placeholder."
 echo
 echo "  [F] Settings page (avatar click navigation)"
 echo "      - Click the avatar in the header -> lands on /settings, NOT a blank page."
 echo "      - The header (theme switcher, nav, avatar, logout) is still visible."
 echo "      - Profile card shows the current avatar image + email + username (single card)."
-echo "      - Avatar upload: pick a PNG/JPEG (<2MB) -> uploads automatically (no extra click) ->"
-echo "        header avatar updates to the uploaded image."
-echo "      - 'Remove avatar' -> PUT /auth/me { avatar: null } -> avatar falls back to Gravatar or placeholder."
+echo "      - 'Upload image' / 'Change avatar' are real buttons (btn-secondary) next to"
+echo "        the avatar; clicking one opens the OS file picker (PNG/JPEG <2MB) and the"
+echo "        upload starts automatically (no extra click) -> header avatar updates."
+echo "      - 'Remove avatar' (shown only when an avatar is uploaded) -> PUT /auth/me"
+echo "        { avatar: null } -> avatar falls back to /placeholder-avatar.svg."
 echo "      - Password form: enter a wrong current password -> see an error message."
 echo "        Enter correct current + matching new password -> see 'Password changed'."
 echo

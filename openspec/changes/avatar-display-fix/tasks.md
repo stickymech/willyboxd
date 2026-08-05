@@ -1,12 +1,12 @@
-## 1. Shared helper
+## 1. Shared package
 
-- [x] 1.1 Generalize `getProfileImageUrl(email, size?, defaultImg?)` in `packages/shared/src/constants.ts` (defaults 200 / "404").
-- [x] 1.2 Add/extend `constants.test.ts`: assert URL is hashed (no raw-email leakage), contains the MD5 of the lowercased email, and honors `size=32`.
+- [x] 1.1 Remove `getProfileImageUrl`, `GRAVATAR_BASE_URL`, and the `js-md5` import from `packages/shared/src/constants.ts`; drop `js-md5` from `package.json` + lockfile.
+- [x] 1.2 Delete the 4 `getProfileImageUrl` tests from `constants.test.ts`.
 - [x] 1.3 Add `ChangePasswordSchema` + `AvatarSchema` to `packages/shared/src/schemas.ts`.
 
 ## 2. Client header avatar
 
-- [x] 2.1 `Header.tsx`: `src = user.avatar ?? getProfileImageUrl(user.email, 32) ?? "/placeholder-avatar.svg"`; `onError` → `/placeholder-avatar.svg`.
+- [x] 2.1 `Header.tsx`: `src = resolveAvatarUrl(user.avatar) ?? "/placeholder-avatar.svg"`; `onError` → `/placeholder-avatar.svg`.
 - [x] 2.2 Add `apps/client/public/placeholder-avatar.svg` (ink tile + neutral silhouette, 32x32 viewBox).
 - [x] 2.3 Point the header avatar link at `/settings` (was `/users/:username` with no route → blank page).
 
@@ -14,7 +14,8 @@
 
 - [x] 3.1 Create `apps/client/src/routes/Settings.tsx`: account info, avatar file upload (POST /auth/avatar, PNG/JPEG, max 2MB), remove avatar (PUT /auth/me with `{ avatar: null }`), password change form (PUT /auth/password).
 - [x] 3.2 Register `/settings` route in `App.tsx`.
-- [ ] 3.3 Manual QA: click header avatar -> /settings loads with header intact; avatar upload persists (auto-upload on select); remove reverts to Gravatar; password change works with wrong/correct current password.
+- [x] 3.3 Use real `btn-secondary` buttons for upload/remove (hidden file input opened via `useRef`), auto-upload on file select; avatar resolves to `/placeholder-avatar.svg` when none uploaded; remove falls back to placeholder.
+- [ ] 3.4 Manual QA: click header avatar -> /settings loads with header intact; avatar upload persists (auto-upload on select via real button); remove reverts to placeholder; password change works with wrong/correct current password.
 
 ## 4. Server endpoints
 
@@ -30,5 +31,5 @@
 
 ## 6. Verification
 
-- [x] 6.1 Run `npm run lint && npm run typecheck && npm run test && npm run build` — all green. shared 22 / client 21 / server 44.
+- [x] 6.1 Run `npm run lint && npm run typecheck && npm run test && npm run build` — all green. shared 18 / client 21 / server 44.
 - [ ] 6.2 Run `scripts/qa-brand-avatar.sh` automated checks (all pass) + manual browser sections [A]–[F].

@@ -11,65 +11,61 @@ root causes stacked on top of each other:
 2. The `onError` fallback pointed at `https://via.placeholder.com/32`, a
    service **shut down in 2024** — so even the fallback is a dead image.
 
-A correct helper already exists in the shared package
-(`getProfileImageUrl` in `packages/shared/src/constants.ts`), so the header was
-simply not using it. The fix is to use it and point the fallback at a local
-asset.
+In the follow-up pass we decided the Gravatar dependency itself is YAGNI: there
+is no OAuth (Apple/Google) yet, so a hashed-email avatar from a third party
+buys nothing and adds a network + privacy dependency. The avatar is now
+**uploaded image, else a local placeholder** — no third-party avatar service at
+all.
 
 ## What Changes
 
 - `Header.tsx`: resolve the avatar `src` as
-  `user.avatar ?? getProfileImageUrl(user.email, 32) ?? "/placeholder-avatar.svg"`
-  and set `onError` to the local `/placeholder-avatar.svg`.
-  - This reuses the existing helper (which MD5-hashes correctly) and adds an
-    honorable first preference: a user-uploaded `avatar` URL if the account
-    ever carries one (see "Relevant user settings" above).
-- `packages/shared/src/constants.ts`: generalize `getProfileImageUrl` to accept
-  `size` and `defaultImg` options (defaults `200`/`"404"` keep the existing test
-  green).
-- Add `apps/client/public/placeholder-avatar.svg` (ink tile + neutral
-  silhouette) as a durable, offline-first fallback.
+  `resolveAvatarUrl(user.avatar) ?? "/placeholder-avatar.svg"` and set `onError`
+  to the local `/placeholder-avatar.svg`. Uploaded `User.avatar` wins; otherwise
+  a committed placeholder — never an email-derived URL.
+- `packages/shared/src/constants.ts`: delete `getProfileImageUrl`,
+  `GRAVATAR_BASE_URL`, and the `js-md5` import; drop the `js-md5` dependency.
+- `apps/client/public/placeholder-avatar.svg` (ink tile + neutral silhouette) is
+  the durable, offline-first fallback.
+- `Settings.tsx`: the avatar controls are real buttons (`btn-secondary`) —
+  "Upload image"/"Change avatar" opens the OS file picker via a hidden file
+  input and uploads automatically on selection; "Remove avatar" is shown only
+  when an avatar is set. This replaces the label-on-`display:none`-input pattern,
+  which was unreliable for opening the picker.
 - `BrandMark` / themes: no change (the avatar lives on `bg`/`card` surfaces; a
   32px image is fine on all four dark themes).
 
 ## Relevant user settings
 
-The avatar is derived from a couple of user-account fields, which is what makes
-this a settings concern rather than a pure UI bug:
+The avatar is derived from a user-account field:
 
-- **`email`** (always present on `User`) drives the Gravatar lookup. This is the
-  *de-facto* avatar today. Because the hash is deterministic, two accounts
-  sharing a Gravatar email get the same avatar — worth knowing if a future
-  "profile picture" upload feature is added.
 - **`avatar: string | null`** (the `users.avatar` column, currently always
-  `null`) is the reserved slot for an uploaded avatar URL. The fix makes the
-  client honor it (`user.avatar ?? ...`) so that when avatar upload is later
-  implemented, no header change is needed — uploaded wins, then Gravatar, then
-  placeholder.
+  `null`) is the reserved slot for an uploaded avatar URL. The client honors it
+  (`resolveAvatarUrl(user.avatar) ?? placeholder`) so that when avatar upload is
+  implemented, no header change is needed — uploaded wins, then placeholder.
 
 ## Capabilities
 
 ### New Capabilities
 - `user-avatar`: a resilient, privacy-safe user avatar display — uploaded
-  `User.avatar`, else a hashed-email Gravatar, else a local placeholder, never
-  a raw-email Gravatar URL or a dead external placeholder.
+  `User.avatar`, else a local placeholder. No third-party avatar service, no
+  email-derived URL.
 
 ### Modified Capabilities
-- `brand-surfaces` (header): the header avatar now resolves through the shared
-  Gravatar helper + local fallback instead of an inline raw-email URL.
+- `brand-surfaces` (header): the header avatar now resolves through the local
+  avatar URL + placeholder fallback instead of a Gravatar URL.
 
 ## Impact
 
-- `apps/client/src/components/Header.tsx`: use `getProfileImageUrl`, honor
-  `user.avatar`, local fallback.
-- `packages/shared/src/constants.ts`: `getProfileImageUrl` gains `size`/`defaultImg`.
+- `apps/client/src/components/Header.tsx`: use `resolveAvatarUrl(user.avatar) ?? "/placeholder-avatar.svg"`, local fallback.
+- `apps/client/src/routes/Settings.tsx`: real avatar buttons (upload via hidden input ref, remove), placeholder-only fallback.
+- `packages/shared/src/constants.ts`: remove `getProfileImageUrl` / `GRAVATAR_BASE_URL` / `js-md5`; `package.json` drops the `js-md5` dependency.
 - `apps/client/public/placeholder-avatar.svg`: new.
 
 ## Risks / Trade-offs
 
-- Gravatar requires network + exposes an MD5 of the email. The local
-  `placeholder-avatar.svg` removes the external dependency for the fallback, and
-  `s=32` requests the smallest useful size. No new privacy regression beyond the
-  pre-existing Gravatar use.
+- Removing Gravatar means no email-keyed avatar appears without an explicit
+  upload. Given there is no OAuth and no profile pictures exist in production,
+  the placeholder is the honest default and the external dependency is gone.
 - Honoring `user.avatar` is a no-op today (column always `null`) but keeps the
   wiring ready for the planned upload feature without a separate header change.

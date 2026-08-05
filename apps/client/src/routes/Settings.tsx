@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useAuth } from "../lib/auth";
 import { apiFetch, apiFetchFormData, API_ENDPOINTS, resolveAvatarUrl } from "../lib/api";
-import { getProfileImageUrl, ChangePasswordSchema } from "@willyboxd/shared";
+import { ChangePasswordSchema } from "@willyboxd/shared";
 import { Header } from "../components/Header";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -44,7 +44,8 @@ export function Settings() {
     );
   }
 
-  const avatarUrl = resolveAvatarUrl(user.avatar) ?? getProfileImageUrl(user.email, 32) ?? "/placeholder-avatar.svg";
+  const avatarUrl = resolveAvatarUrl(user.avatar) ?? "/placeholder-avatar.svg";
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -137,30 +138,37 @@ export function Settings() {
               <p className="text-sm text-text-subtle">{user.email}</p>
             </div>
           </div>
-          <label className="inline-block text-sm text-text-subtle hover:text-text file:cursor-pointer">
+          <div className="flex items-center gap-3">
             <input
+              ref={fileInputRef}
               type="file"
               accept="image/png, image/jpeg"
               onChange={handleFileChange}
               disabled={avatarStatus === "uploading"}
               className="hidden"
             />
-            {avatarStatus === "uploading" ? "Uploading…" : user.avatar ? "Change avatar" : "Upload image"}
-          </label>
-          {user.avatar && (
             <button
               type="button"
-              onClick={removeAvatar}
+              onClick={() => fileInputRef.current?.click()}
               disabled={avatarStatus === "uploading"}
-              className="ml-4 text-sm text-text-subtle hover:text-text"
+              className="btn btn-secondary"
             >
-              Remove avatar
+              {avatarStatus === "uploading" ? "Uploading…" : user.avatar ? "Change avatar" : "Upload image"}
             </button>
-          )}
+            {user.avatar && (
+              <button
+                type="button"
+                onClick={removeAvatar}
+                disabled={avatarStatus === "uploading"}
+                className="btn btn-secondary"
+              >
+                Remove avatar
+              </button>
+            )}
+          </div>
           {avatarStatus === "error" && <p className="mt-2 text-sm text-error">{uploadError || "Upload failed"}</p>}
           <p className="mt-2 text-xs text-text-subtle">
-            Upload a PNG or JPEG image (max 2MB). When none is set, your Gravatar (if any) is used, falling back to a
-            local placeholder.
+            Upload a PNG or JPEG image (max 2MB). When none is set, a local placeholder is shown.
           </p>
         </section>
 

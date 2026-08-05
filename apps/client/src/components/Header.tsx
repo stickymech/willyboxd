@@ -3,7 +3,6 @@ import { useAuth } from "../lib/auth";
 import { resolveAvatarUrl } from "../lib/api";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { BrandMark } from "./BrandMark";
-import { getProfileImageUrl } from "@willyboxd/shared";
 
 export function Header() {
   const { user, isLoading, logout } = useAuth();
@@ -39,7 +38,7 @@ export function Header() {
             <div className="flex items-center gap-3">
               <Link to="/settings">
                 <img
-                  src={resolveAvatarUrl(user.avatar) ?? getProfileImageUrl(user.email, 32) ?? "/placeholder-avatar.svg"}
+                  src={resolveAvatarUrl(user.avatar) ?? "/placeholder-avatar.svg"}
                   alt={user.username}
                   className="w-8 h-8 rounded-full"
                   onError={(e) => {

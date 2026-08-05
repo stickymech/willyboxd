@@ -230,7 +230,7 @@ describe("Auth Routes", () => {
       headers: { "Content-Type": "application/json", cookie },
     });
 
-    // then clear it (mirrors the "Clear (use Gravatar)" button)
+    // then clear it (mirrors the "Remove avatar" button)
     const res = await app.request("/auth/me", {
       method: "PUT",
       body: JSON.stringify({ avatar: null }),

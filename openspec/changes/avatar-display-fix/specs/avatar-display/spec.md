@@ -1,51 +1,33 @@
 ## ADDED Requirements
 
-### Requirement: Header avatar uses hashed-email Gravatar
-The header SHALL render the logged-in user's avatar by requesting
-`https://www.gravatar.com/avatar/<md5 of trimmed-lowercased email>?s=32&d=404`,
-using the shared `getProfileImageUrl` helper. The request SHALL NOT embed the
-raw email address in the URL.
+### Requirement: Header avatar resolves to uploaded avatar or local placeholder
+The header SHALL render the logged-in user's avatar as the uploaded `User.avatar`
+URL when set, otherwise the committed `/placeholder-avatar.svg`. The client
+SHALL NOT contact any third-party avatar service, and the raw email SHALL NOT
+appear in any avatar `src`.
 
-#### Scenario: Gravatar URL is hashed
-- **WHEN** the header renders for a user with email `Test@Example.com`
-- **THEN** the avatar `src` contains `gravatar.com/avatar/<md5("test@example.com")>`
-  and does NOT contain the raw email string
+#### Scenario: no avatar resolves to local placeholder
+- **WHEN** `user.avatar` is `null`
+- **THEN** the avatar `src` is `/placeholder-avatar.svg`
 
-#### Scenario: No raw email leakage
-- **WHEN** the avatar src is constructed
-- **THEN** substring `Test@Example` does not appear anywhere in the URL
-
-### Requirement: Uploaded avatar takes precedence
-If the authenticated `User.avatar` is a non-null URL, the header SHALL render that
-URL and SHALL NOT fall back to Gravatar for that user.
-
-#### Scenario: user.avatar is used when present
+#### Scenario: uploaded avatar is used when present
 - **WHEN** `user.avatar` is `"https://cdn.willyboxd.example/u/123.png"`
-- **THEN** the avatar `src` is that URL, not a Gravatar URL
+- **THEN** the avatar `src` is that URL, not the placeholder
 
-### Requirement: Local fallback when no avatar resolves
-When the resolved Gravatar URL fails to load (HTTP 404 or network error), the
-header SHALL swap in `/placeholder-avatar.svg` so no broken image icon appears.
+### Requirement: Local placeholder fallback on load error
+When the resolved avatar URL fails to load (network error), the header SHALL swap
+in `/placeholder-avatar.svg` so no broken image icon appears.
 
-#### Scenario: Gravatar 404 falls back to local placeholder
-- **WHEN** the avatar `<img>` fires `onError` (e.g. the user has no Gravatar)
+#### Scenario: onError swaps in local placeholder
+- **WHEN** the avatar `<img>` fires `onError`
 - **THEN** its `src` becomes `/placeholder-avatar.svg`, which is a committed SVG
-
-### Requirement: getProfileImageUrl is parameterized
-The shared `getProfileImageUrl(email, size?, defaultImg?)` helper SHALL accept an
-optional display size (default 200) and optional Gravatar default-image token
-(default `404`), returning `null` when no email is supplied.
-
-#### Scenario: Header passes 32px
-- **WHEN** the header calls `getProfileImageUrl(user.email, 32)`
-- **THEN** the resulting URL contains `s=32`
 
 ## MODIFIED Requirements
 
 ### Requirement: User type carries an avatar URL
 The shared `User` type's `avatar` field SHALL remain `string | null`, sourced
-from the `users.avatar` column, and the client SHALL prefer it ahead of
-Gravatar.
+from the `users.avatar` column, and the client SHALL prefer it ahead of the
+placeholder.
 
 ### Requirement: Header avatar click navigates to /settings
 The header SHALL link the avatar image to `/settings` — NOT `/users/:username`
@@ -56,12 +38,14 @@ The header SHALL link the avatar image to `/settings` — NOT `/users/:username`
 - **THEN** the browser navigates to `/settings` and the full `Header` (nav, theme
   switcher, avatar, logout) is visible above the settings card
 
-### Requirement: Settings page displays account info and avatar resolver
+### Requirement: Settings page displays account info and avatar controls
 The `/settings` page SHALL show:
-- the current avatar image (`resolveAvatarUrl(user.avatar) ?? getProfileImageUrl(email, 32) ?? placeholder`)
+- the current avatar image (`resolveAvatarUrl(user.avatar) ?? /placeholder-avatar.svg`)
 - the user's email and username as read-only text in a single Profile card
-- an avatar file input (PNG/JPEG, max 2MB) that uploads automatically on
-  selection, and, when an avatar is set, a "Remove avatar" control
+- an "Upload image" / "Change avatar" button (`btn-secondary`) that opens the OS
+  file picker via a hidden file input (PNG/JPEG, max 2MB) and uploads
+  automatically on selection
+- a "Remove avatar" button (`btn-secondary`), shown only when an avatar is set
 
 ### Requirement: Settings page updates avatar via file upload
 The settings page SHALL let the user upload a PNG or JPEG image as their avatar.
@@ -71,21 +55,13 @@ its serve URL (`/api/avatars/<id>`) in `users.avatar`. A successful upload SHALL
 make the header avatar reflect the new image without a full page reload.
 
 #### Scenario: avatar image is uploaded
-- **WHEN** the user selects a valid PNG/JPEG file
-- **THEN** `POST /auth/avatar` is called with the file as multipart data
-  (upload starts automatically on selection; no separate submit click)
+- **WHEN** the user clicks the "Upload image" button and selects a valid PNG/JPEG
+  file
+- **THEN** the OS file picker opens, `POST /auth/avatar` is called with the file
+  as multipart data (upload starts automatically on selection; no separate submit
+  click)
 - **AND** the server stores the served file, persists `/api/avatars/<id>` in
   `users.avatar`, and the header shows the new image
-
-#### Requirement: Settings page removes an uploaded avatar
-The settings page SHALL show a "Remove avatar" control only when an avatar is
-set, which calls `PUT /auth/me` with `{ avatar: null }`; the header then falls
-back to Gravatar (or placeholder).
-
-#### Scenario: avatar is removed
-- **WHEN** the user clicks "Remove avatar"
-- **THEN** `PUT /auth/me` is called with `{ avatar: null }`
-- **AND** the header falls back to Gravatar (or placeholder)
 
 #### Scenario: unsupported image format is rejected
 - **WHEN** the user uploads a non-image file (or a non-PNG/JPEG image)
@@ -95,10 +71,15 @@ back to Gravatar (or placeholder).
 - **WHEN** the user uploads an image larger than 2MB
 - **THEN** the server returns 413
 
+### Requirement: Settings page removes an uploaded avatar
+The settings page SHALL show a "Remove avatar" control only when an avatar is
+set, which calls `PUT /auth/me` with `{ avatar: null }`; the header then falls
+back to `/placeholder-avatar.svg`.
+
 #### Scenario: avatar is removed
-- **WHEN** the user clicks "Remove (use Gravatar)"
+- **WHEN** the user clicks "Remove avatar"
 - **THEN** `PUT /auth/me` is called with `{ avatar: null }`
-- **AND** the header falls back to Gravatar (or placeholder)
+- **AND** the header falls back to `/placeholder-avatar.svg`
 
 ### Requirement: Settings page changes password via PUT /auth/password
 The settings page SHALL provide a form (current password, new password,

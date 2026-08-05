@@ -66,9 +66,8 @@ Automated tests can't cover the browser. After green checks:
 
 ## Conventions worth knowing
 
-- Avatars: `user.avatar` (uploaded) wins over hashed-email Gravatar, which wins
-  over `/placeholder-avatar.svg`. Never leak a raw email into a URL. See
-  `getProfileImageUrl` in `packages/shared/src/constants.ts`.
+- Avatars: `user.avatar` (uploaded) wins over `/placeholder-avatar.svg`. There
+  is no Gravatar/hashed-email fallback — never leak a raw email into a URL.
 - Auth: session cookie (`willyboxd_session`); server validates via `requireAuth`;
   `PUT /auth/me` clears the avatar with `{ avatar: null }`.
 - Client API helpers: `apiFetch`, `apiFetchFormData`, `resolveAvatarUrl` in
