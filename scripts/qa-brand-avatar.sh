@@ -29,7 +29,7 @@ check() {
 echo "=== 1. Static brand assets (automated) ==="
 
 # PNG dimensions via sips.
-for pair in "icon-192.png 192" "icon-512.png 512" "apple-touch-icon.png 180" "og.png 1200x630"; do
+for pair in "icon-192.png 192" "icon-512.png 512" "apple-touch-icon.png 180" "favicon-16x16.png 16" "favicon-32x32.png 32" "og.png 1200x630"; do
   file="${pair%% *}"
   want="${pair##* }"
   if [ -f "$PUB/$file" ]; then
@@ -63,6 +63,12 @@ done
 [ -f "$PUB/placeholder-avatar.svg" ] && check ok "placeholder-avatar.svg present" || check no "placeholder-avatar.svg present"
 grep -q "#0F172A" "$PUB/favicon.svg" && check ok "favicon.svg uses ink #0F172A tile" || check no "favicon.svg uses ink tile"
 
+# Multi-size favicon files exist (browser tabs need PNG/ICO fallbacks for SVG).
+[ -f "$PUB/favicon-16x16.png" ] && check ok "favicon-16x16.png present" || check no "favicon-16x16.png present"
+[ -f "$PUB/favicon-32x32.png" ] && check ok "favicon-32x32.png present" || check no "favicon-32x32.png present"
+[ -f "$PUB/favicon.ico" ] && check ok "favicon.ico present" || check no "favicon.ico present"
+grep -q 'favicon-16x16.png' "$ROOT/apps/client/index.html" && check ok "index.html references multi-size favicon" || check no "index.html references multi-size favicon"
+
 echo
 echo "=== 2. Avatar code path (automated) ==="
 
@@ -93,7 +99,10 @@ echo
 echo "  [A] Favicon / static tiles"
 echo "      - Reload the app; the browser tab favicon is the disc-trio on an ink tile"
 echo "        (three orange/green/blue discs), not the old amber slate box."
-echo "      - Install/refresh the PWA; launcher icon is the 512-tile disc-trio."
+echo "      - Open the favicon in a browser at native size (16x16): the three discs"
+echo "        should be visible as distinct colored circles (no rocket details, which"
+echo "        are invisible at that size)."
+echo "      - Install/refresh the PWA; launcher icon is the 512-tile disc-trio with rockets."
 echo
 echo "  [B] Header brand mark"
 echo "      - Header shows the disc-trio mark (w-28 h-14) + 'Willyboxd' wordmark."
@@ -114,6 +123,16 @@ echo "      - Register/log in with an email that has NO Gravatar -> the image"
 echo "        404s once and falls back to /placeholder-avatar.svg (ink tile + slate"
 echo "        silhouette), still no broken-image icon."
 echo "      - (Future) if a User ever has an uploaded avatar URL it wins over Gravatar."
+echo
+echo "  [F] Settings page (avatar click navigation)"
+echo "      - Click the avatar in the header -> lands on /settings, NOT a blank page."
+echo "      - The header (theme switcher, nav, avatar, logout) is still visible."
+echo "      - Account card shows the current avatar image + email + username."
+echo "      - Avatar upload: pick a PNG/JPEG (<2MB), click 'Upload Avatar', then refresh -> header"
+echo "        avatar updates to the uploaded image."
+echo "      - 'Remove (use Gravatar)' -> PUT /auth/me { avatar: null } -> avatar falls back to Gravatar or placeholder."
+echo "      - Password form: enter a wrong current password -> see an error message."
+echo "        Enter correct current + matching new password -> see 'Password changed'."
 echo
 echo "  [E] Anime (regression, since these changes share the header)"
 echo "      - Home shows 'Trending Anime' + 'Top Anime' rows; Search anime toggle"

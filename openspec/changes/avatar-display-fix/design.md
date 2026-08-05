@@ -30,3 +30,22 @@ Gravatar". Gravatar's own `d=` defaults would still hit the network and 404.
 ### D4. Generalize the shared helper, don't re-implement in the header
 `getProfileImageUrl(email, size, defaultImg)` gains options; header passes
 `size=32`. Keeps the single hashed-email source of truth unit-tested.
+
+### D5. Avatar click navigates to a /settings route (not a 404-style blank page)
+The header avatar links to `/settings`, a new route that renders the full
+`Header` + an account settings card. Previously the link went to
+`/users/:username`, a path with no client route and a server stub returning
+501, producing a blank page with no header. The settings page lets the user:
+- view their current avatar/email/username,
+- upload a PNG/JPEG avatar image (validated by magic bytes, capped at 2MB,
+  stored under `data/avatars/` and served at `/api/avatars/<id>`; the resulting
+  serve URL is stored in `users.avatar` and prioritized over Gravatar),
+- remove a uploaded avatar (`PUT /auth/me` with `{ avatar: null }`) so the
+  header falls back to Gravatar/placeholder,
+- change their password (current + new, server-side bcrypt verification).
+
+### D6. Favicon matches the disc-trio at all sizes
+The browser-tab favicon previously carried the full rocket detail, invisible
+at 16×16. The `favicon.svg` now contains only the three discs; PNG/ICO
+fallbacks (16×16, 32×32) are generated from the same geometry so the tab icon
+looks like the header mark on every browser.

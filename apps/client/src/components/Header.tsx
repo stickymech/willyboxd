@@ -1,5 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../lib/auth";
+import { resolveAvatarUrl } from "../lib/api";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { BrandMark } from "./BrandMark";
 import { getProfileImageUrl } from "@willyboxd/shared";
@@ -36,9 +37,9 @@ export function Header() {
 
           {isLoading ? null : user ? (
             <div className="flex items-center gap-3">
-              <Link to={`/users/${user.username}`}>
+              <Link to="/settings">
                 <img
-                  src={user.avatar ?? getProfileImageUrl(user.email, 32) ?? "/placeholder-avatar.svg"}
+                  src={resolveAvatarUrl(user.avatar) ?? getProfileImageUrl(user.email, 32) ?? "/placeholder-avatar.svg"}
                   alt={user.username}
                   className="w-8 h-8 rounded-full"
                   onError={(e) => {

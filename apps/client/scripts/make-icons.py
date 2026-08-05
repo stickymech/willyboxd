@@ -125,6 +125,31 @@ def render_square(size):
     return img.convert("RGB")
 
 
+def render_favicon(size):
+    """Simplified disc-trio favicon — ink tile + 3 colored discs (no rocket details).
+    Optimized for small browser-tab sizes where rocket silhouettes are invisible."""
+    img = Image.new("RGBA", (size, size), INK)
+    draw = ImageDraw.Draw(img)
+
+    # Scale the 3-disc geometry to fit ~90% of the canvas.
+    target_width = size * 0.90
+    scale = target_width / (240 - DISC_RADIUS)  # content width = 240 - 42 = 198
+
+    mark_w = 240 * scale
+    mark_h = 120 * scale
+    dx = (size - mark_w) / 2
+    dy = (size - mark_h) / 2
+
+    # discs (bottom-to-top overlap: blue, green, orange)
+    for d in DISCS:
+        cx = dx + d["cx"] * scale
+        cy = dy + d["cy"] * scale
+        r = DISC_RADIUS * scale
+        draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=d["fill"])
+
+    return img
+
+
 def render_og():
     size = (1200, 630)
     img = Image.new("RGBA", size, INK)
@@ -170,6 +195,17 @@ def main():
     for name, size in (("icon-192.png", 192), ("icon-512.png", 512), ("apple-touch-icon.png", 180)):
         render_square(size).save(os.path.join(PUBLIC, name))
         print(f"generated {name}")
+
+    # favicon: simplified disc-trio for browser tabs (no rocket details at small sizes)
+    fav_16 = render_favicon(16)
+    fav_32 = render_favicon(32)
+    fav_16.save(os.path.join(PUBLIC, "favicon-16x16.png"))
+    fav_32.save(os.path.join(PUBLIC, "favicon-32x32.png"))
+    print("generated favicon-16x16.png, favicon-32x32.png")
+    # ICO with both sizes (downscale from 32 for the 16 entry to keep crisp edges)
+    fav_32.save(os.path.join(PUBLIC, "favicon.ico"), format="ICO", sizes=[(16, 16), (32, 32)])
+    print("generated favicon.ico")
+
     render_og()
 
 

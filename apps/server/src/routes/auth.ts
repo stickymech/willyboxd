@@ -1,4 +1,5 @@
-import { RegisterSchema, LoginSchema, SESSION_COOKIE_NAME, SESSION_EXPIRY_DAYS, MAX_SESSIONS_PER_USER } from "@willyboxd/shared";
+import { RegisterSchema, LoginSchema, ChangePasswordSchema, AvatarSchema, SESSION_COOKIE_NAME, SESSION_EXPIRY_DAYS, MAX_SESSIONS_PER_USER } from "@willyboxd/shared";
+import { detectImageExt, saveAvatarFile, MAX_AVATAR_BYTES } from "./avatars";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "../db";
@@ -134,4 +135,89 @@ export function registerAuthRoutes(app: Hono) {
     }
     return c.json({ user });
   });
+
+  app.put(
+    "/auth/me",
+    requireAuth as unknown as (c: Context, next: Next) => Promise<void> | Response,
+    async (c: Context) => {
+      const user = c.get("user")!;
+      const body = await c.req.json();
+      const parsed = AvatarSchema.safeParse(body);
+
+      if (!parsed.success) {
+        return c.json({ error: "Validation failed", details: parsed.error.errors }, 400);
+      }
+
+      db.prepare("UPDATE users SET avatar = ?, updated_at = datetime('now') WHERE id = ?").run(parsed.data.avatar, user.id);
+
+      return c.json({ user: { ...user, avatar: parsed.data.avatar } });
+    },
+  );
+
+  app.put(
+    "/auth/password",
+    requireAuth as unknown as (c: Context, next: Next) => Promise<void> | Response,
+    async (c: Context) => {
+      const user = c.get("user")!;
+      const body = await c.req.json();
+      const parsed = ChangePasswordSchema.safeParse(body);
+
+      if (!parsed.success) {
+        return c.json({ error: "Validation failed", details: parsed.error.errors }, 400);
+      }
+
+      const { currentPassword, newPassword } = parsed.data;
+
+      const row = db.prepare("SELECT password_hash FROM users WHERE id = ?").get(user.id) as { password_hash: string } | null;
+      if (!row) {
+        return c.json({ error: "User not found" }, 404);
+      }
+
+      const match = await bcrypt.compare(currentPassword, row.password_hash);
+      if (!match) {
+        return c.json({ error: "Current password is incorrect" }, 401);
+      }
+
+      const newHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+      db.prepare("UPDATE users SET password_hash = ?, updated_at = datetime('now') WHERE id = ?").run(newHash, user.id);
+
+      return c.json({ success: true });
+    },
+  );
+
+  app.post(
+    "/auth/avatar",
+    requireAuth as unknown as (c: Context, next: Next) => Promise<void> | Response,
+    async (c: Context) => {
+      const user = c.get("user")!;
+
+      let formData: FormData;
+      try {
+        formData = await c.req.formData();
+      } catch {
+        return c.json({ error: "Invalid form data" }, 400);
+      }
+
+      const file = formData.get("avatar");
+      if (!file || typeof file === "string") {
+        return c.json({ error: "No avatar file provided" }, 400);
+      }
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+
+      if (buffer.length > MAX_AVATAR_BYTES) {
+        return c.json({ error: "Image too large (max 2MB)" }, 413);
+      }
+
+      const ext = detectImageExt(buffer);
+      if (!ext) {
+        return c.json({ error: "Unsupported image format. Use a PNG or JPEG." }, 400);
+      }
+
+      const avatarUrl = saveAvatarFile(buffer);
+      db.prepare("UPDATE users SET avatar = ?, updated_at = datetime('now') WHERE id = ?").run(avatarUrl, user.id);
+
+      return c.json({ user: { ...user, avatar: avatarUrl }, avatar: avatarUrl });
+    },
+  );
 }
