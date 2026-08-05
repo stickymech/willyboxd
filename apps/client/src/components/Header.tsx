@@ -2,6 +2,7 @@ import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { BrandMark } from "./BrandMark";
+import { getProfileImageUrl } from "@willyboxd/shared";
 
 export function Header() {
   const { user, isLoading, logout } = useAuth();
@@ -37,11 +38,11 @@ export function Header() {
             <div className="flex items-center gap-3">
               <Link to={`/users/${user.username}`}>
                 <img
-                  src={`https://www.gravatar.com/avatar/${user.email}?s=32&d=404`}
+                  src={user.avatar ?? getProfileImageUrl(user.email, 32) ?? "/placeholder-avatar.svg"}
                   alt={user.username}
                   className="w-8 h-8 rounded-full"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/32";
+                    (e.target as HTMLImageElement).src = "/placeholder-avatar.svg";
                   }}
                 />
               </Link>

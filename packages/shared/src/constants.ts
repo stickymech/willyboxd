@@ -51,9 +51,14 @@ export function getProfileUrl(path: string | null, size: keyof typeof PROFILE_SI
 
 export const GRAVATAR_BASE_URL = "https://www.gravatar.com/avatar";
 
-export function getProfileImageUrl(email: string | undefined | null): string | null {
+export function getProfileImageUrl(
+  email: string | undefined | null,
+  size = 200,
+  defaultImg = "404",
+): string | null {
   if (!email) return null;
-  return `${GRAVATAR_BASE_URL}/${md5(email.trim().toLowerCase())}?s=200&d=404`;
+  const hash = md5(email.trim().toLowerCase());
+  return `${GRAVATAR_BASE_URL}/${hash}?s=${size}&d=${defaultImg}`;
 }
 
 export function formatMinutes(minutes: number): { hours: number; minutes: number } {

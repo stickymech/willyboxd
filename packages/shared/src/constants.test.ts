@@ -1,5 +1,13 @@
 import { test, expect, describe } from "vitest";
-import { ratingLabel, formatMinutes, getPosterUrl, getBackdropUrl, getProfileImageUrl, RATING_OPTIONS } from "@willyboxd/shared";
+import { md5 } from "js-md5";
+import {
+  ratingLabel,
+  formatMinutes,
+  getPosterUrl,
+  getBackdropUrl,
+  getProfileImageUrl,
+  RATING_OPTIONS,
+} from "@willyboxd/shared";
 
 describe("Shared Utilities", () => {
   test("ratingLabel returns correct star display", () => {
@@ -35,6 +43,20 @@ describe("Shared Utilities", () => {
     const url = getProfileImageUrl("test@example.com");
     expect(url).toContain("gravatar.com/avatar/");
     expect(url).toContain("s=200");
+  });
+
+  test("getProfileImageUrl hashes the email and omits the raw address", () => {
+    const url = getProfileImageUrl("Test@Example.com");
+    expect(url).toContain("gravatar.com/avatar/");
+    expect(url).not.toContain("Test@Example"); // raw email must not leak
+    expect(url).toContain(md5("test@example.com"));
+    expect(url).toContain("s=200");
+  });
+
+  test("getProfileImageUrl honors the size option", () => {
+    const url = getProfileImageUrl("test@example.com", 32);
+    expect(url).toContain("s=32");
+    expect(url).not.toContain("s=200");
   });
 
   test("getProfileImageUrl returns null for null email", () => {
