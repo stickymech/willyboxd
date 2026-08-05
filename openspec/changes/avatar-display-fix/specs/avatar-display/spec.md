@@ -42,10 +42,10 @@ The header SHALL link the avatar image to `/settings` — NOT `/users/:username`
 The `/settings` page SHALL show:
 - the current avatar image (`resolveAvatarUrl(user.avatar) ?? /placeholder-avatar.svg`)
 - the user's email and username as read-only text in a single Profile card
-- an "Upload image" / "Change avatar" button (`btn-secondary`) that opens the OS
+- an "Upload image" / "Change avatar" button (primary accent) that opens the OS
   file picker via a hidden file input (PNG/JPEG, max 2MB) and uploads
   automatically on selection
-- a "Remove avatar" button (`btn-secondary`), shown only when an avatar is set
+- a "Remove avatar" button (secondary), shown only when an avatar is set
 
 ### Requirement: Settings page updates avatar via file upload
 The settings page SHALL let the user upload a PNG or JPEG image as their avatar.

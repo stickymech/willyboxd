@@ -14,7 +14,7 @@
 
 - [x] 3.1 Create `apps/client/src/routes/Settings.tsx`: account info, avatar file upload (POST /auth/avatar, PNG/JPEG, max 2MB), remove avatar (PUT /auth/me with `{ avatar: null }`), password change form (PUT /auth/password).
 - [x] 3.2 Register `/settings` route in `App.tsx`.
-- [x] 3.3 Use real `btn-secondary` buttons for upload/remove (hidden file input opened via `useRef`), auto-upload on file select; avatar resolves to `/placeholder-avatar.svg` when none uploaded; remove falls back to placeholder.
+- [x] 3.3 Use a real primary button for upload/change (hidden file input opened via `useRef`), secondary button for remove, auto-upload on file select; avatar resolves to `/placeholder-avatar.svg` when none uploaded; remove falls back to placeholder and resets to "Upload image".
 - [ ] 3.4 Manual QA: click header avatar -> /settings loads with header intact; avatar upload persists (auto-upload on select via real button); remove reverts to placeholder; password change works with wrong/correct current password.
 
 ## 4. Server endpoints

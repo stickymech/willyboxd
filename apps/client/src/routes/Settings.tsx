@@ -9,7 +9,7 @@ export function Settings() {
   const { user, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
 
-  const [avatarStatus, setAvatarStatus] = useState<"idle" | "uploading" | "error">("idle");
+  const [avatarStatus, setAvatarStatus] = useState<"idle" | "uploading" | "removing" | "error">("idle");
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
@@ -68,13 +68,14 @@ export function Settings() {
   };
 
   const removeAvatar = async () => {
-    setAvatarStatus("uploading");
+    setAvatarStatus("removing");
     setUploadError(null);
     try {
       await apiFetch(API_ENDPOINTS.auth.update, {
         method: "PUT",
         body: JSON.stringify({ avatar: null }),
       });
+      setAvatarStatus("idle");
       queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
     } catch {
       setAvatarStatus("error");
@@ -144,14 +145,14 @@ export function Settings() {
               type="file"
               accept="image/png, image/jpeg"
               onChange={handleFileChange}
-              disabled={avatarStatus === "uploading"}
+              disabled={avatarStatus !== "idle"}
               className="hidden"
             />
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={avatarStatus === "uploading"}
-              className="btn btn-secondary"
+              disabled={avatarStatus !== "idle"}
+              className="btn btn-primary"
             >
               {avatarStatus === "uploading" ? "Uploading…" : user.avatar ? "Change avatar" : "Upload image"}
             </button>
@@ -159,10 +160,10 @@ export function Settings() {
               <button
                 type="button"
                 onClick={removeAvatar}
-                disabled={avatarStatus === "uploading"}
+                disabled={avatarStatus !== "idle"}
                 className="btn btn-secondary"
               >
-                Remove avatar
+                {avatarStatus === "removing" ? "Removing…" : "Remove avatar"}
               </button>
             )}
           </div>
