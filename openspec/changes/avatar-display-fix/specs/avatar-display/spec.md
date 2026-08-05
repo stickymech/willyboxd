@@ -59,9 +59,9 @@ The header SHALL link the avatar image to `/settings` — NOT `/users/:username`
 ### Requirement: Settings page displays account info and avatar resolver
 The `/settings` page SHALL show:
 - the current avatar image (`resolveAvatarUrl(user.avatar) ?? getProfileImageUrl(email, 32) ?? placeholder`)
-- the user's email and username as read-only text
-- an avatar file input (PNG/JPEG, max 2MB) and, when an avatar is set, a
-  "Remove (use Gravatar)" button
+- the user's email and username as read-only text in a single Profile card
+- an avatar file input (PNG/JPEG, max 2MB) that uploads automatically on
+  selection, and, when an avatar is set, a "Remove avatar" control
 
 ### Requirement: Settings page updates avatar via file upload
 The settings page SHALL let the user upload a PNG or JPEG image as their avatar.
@@ -71,10 +71,21 @@ its serve URL (`/api/avatars/<id>`) in `users.avatar`. A successful upload SHALL
 make the header avatar reflect the new image without a full page reload.
 
 #### Scenario: avatar image is uploaded
-- **WHEN** the user selects a valid PNG/JPEG file and clicks "Upload Avatar"
+- **WHEN** the user selects a valid PNG/JPEG file
 - **THEN** `POST /auth/avatar` is called with the file as multipart data
+  (upload starts automatically on selection; no separate submit click)
 - **AND** the server stores the served file, persists `/api/avatars/<id>` in
   `users.avatar`, and the header shows the new image
+
+#### Requirement: Settings page removes an uploaded avatar
+The settings page SHALL show a "Remove avatar" control only when an avatar is
+set, which calls `PUT /auth/me` with `{ avatar: null }`; the header then falls
+back to Gravatar (or placeholder).
+
+#### Scenario: avatar is removed
+- **WHEN** the user clicks "Remove avatar"
+- **THEN** `PUT /auth/me` is called with `{ avatar: null }`
+- **AND** the header falls back to Gravatar (or placeholder)
 
 #### Scenario: unsupported image format is rejected
 - **WHEN** the user uploads a non-image file (or a non-PNG/JPEG image)

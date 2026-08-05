@@ -14,7 +14,7 @@
 
 - [x] 3.1 Create `apps/client/src/routes/Settings.tsx`: account info, avatar file upload (POST /auth/avatar, PNG/JPEG, max 2MB), remove avatar (PUT /auth/me with `{ avatar: null }`), password change form (PUT /auth/password).
 - [x] 3.2 Register `/settings` route in `App.tsx`.
-- [ ] 3.3 Manual QA: click header avatar -> /settings loads with header intact; avatar upload persists; remove reverts to Gravatar; password change works with wrong/correct current password.
+- [ ] 3.3 Manual QA: click header avatar -> /settings loads with header intact; avatar upload persists (auto-upload on select); remove reverts to Gravatar; password change works with wrong/correct current password.
 
 ## 4. Server endpoints
 

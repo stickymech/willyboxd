@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../lib/auth";
 import { apiFetch, apiFetchFormData, API_ENDPOINTS, resolveAvatarUrl } from "../lib/api";
 import { getProfileImageUrl, ChangePasswordSchema } from "@willyboxd/shared";
@@ -9,20 +9,12 @@ export function Settings() {
   const { user, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
 
-  const [preview, setPreview] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [avatarStatus, setAvatarStatus] = useState<"idle" | "uploading" | "uploaded" | "error">("idle");
+  const [avatarStatus, setAvatarStatus] = useState<"idle" | "uploading" | "error">("idle");
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [passwordStatus, setPasswordStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [passwordError, setPasswordError] = useState<string | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (preview) URL.revokeObjectURL(preview);
-    };
-  }, [preview]);
 
   if (authLoading) {
     return (
@@ -52,34 +44,22 @@ export function Settings() {
     );
   }
 
-  const avatarUrl = preview ?? resolveAvatarUrl(user.avatar) ?? getProfileImageUrl(user.email, 32) ?? "/placeholder-avatar.svg";
+  const avatarUrl = resolveAvatarUrl(user.avatar) ?? getProfileImageUrl(user.email, 32) ?? "/placeholder-avatar.svg";
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (preview) URL.revokeObjectURL(preview);
-    setPreview(URL.createObjectURL(file));
-    setSelectedFile(file);
-    setAvatarStatus("idle");
-    setUploadError(null);
-  };
-
-  const uploadAvatar = async () => {
-    if (!selectedFile) return;
+    e.target.value = "";
 
     setAvatarStatus("uploading");
     setUploadError(null);
     try {
       const form = new FormData();
-      form.append("avatar", selectedFile);
+      form.append("avatar", file);
       await apiFetchFormData(API_ENDPOINTS.auth.upload, form);
-      setAvatarStatus("uploaded");
+      setAvatarStatus("idle");
       queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
-      if (preview) URL.revokeObjectURL(preview);
-      setPreview(null);
-      setSelectedFile(null);
-      setTimeout(() => setAvatarStatus("idle"), 2000);
     } catch (err) {
       setAvatarStatus("error");
       setUploadError((err as Error).message);
@@ -94,12 +74,7 @@ export function Settings() {
         method: "PUT",
         body: JSON.stringify({ avatar: null }),
       });
-      setAvatarStatus("uploaded");
       queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
-      if (preview) URL.revokeObjectURL(preview);
-      setPreview(null);
-      setSelectedFile(null);
-      setTimeout(() => setAvatarStatus("idle"), 2000);
     } catch {
       setAvatarStatus("error");
       setUploadError("Failed to remove avatar");
@@ -109,6 +84,7 @@ export function Settings() {
   const savePassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setPasswordError(null);
+    setPasswordStatus("idle");
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       setPasswordError("New passwords do not match");
@@ -133,7 +109,6 @@ export function Settings() {
       });
       setPasswordStatus("saved");
       setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      setTimeout(() => setPasswordStatus("idle"), 2000);
     } catch (err) {
       setPasswordStatus("error");
       setPasswordError((err as Error).message);
@@ -146,65 +121,50 @@ export function Settings() {
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <h1 className="text-3xl font-bold text-text mb-8">Settings</h1>
 
-        <section className="mb-10">
-          <h2 className="text-xl font-semibold text-text mb-4">Account</h2>
-          <div className="grid grid-cols-[60px_1fr] gap-3 items-center mb-2">
+        <section className="mb-10 pb-6 border-b border-border">
+          <h2 className="text-xl font-semibold text-text mb-4">Profile</h2>
+          <div className="flex items-center gap-4 mb-4">
             <img
               src={avatarUrl}
               onError={(e) => {
                 (e.target as HTMLImageElement).src = "/placeholder-avatar.svg";
               }}
               alt={user.username}
-              className="w-14 h-14 rounded-full object-cover"
+              className="w-16 h-16 rounded-full object-cover"
             />
             <div>
               <p className="font-medium text-text">{user.username}</p>
               <p className="text-sm text-text-subtle">{user.email}</p>
             </div>
           </div>
-        </section>
-
-        <section className="mb-10 pb-6 border-b border-border">
-          <h2 className="text-xl font-semibold text-text mb-4">Avatar</h2>
-          <p className="text-sm text-text-subtle mb-3">
-            Upload a PNG or JPEG image (max 2MB) to use as your avatar. When none is set,
-            your Gravatar (if any) is used, falling back to a local placeholder.
+          <label className="inline-block text-sm text-text-subtle hover:text-text file:cursor-pointer">
+            <input
+              type="file"
+              accept="image/png, image/jpeg"
+              onChange={handleFileChange}
+              disabled={avatarStatus === "uploading"}
+              className="hidden"
+            />
+            {avatarStatus === "uploading" ? "Uploading…" : user.avatar ? "Change avatar" : "Upload image"}
+          </label>
+          {user.avatar && (
+            <button
+              type="button"
+              onClick={removeAvatar}
+              disabled={avatarStatus === "uploading"}
+              className="ml-4 text-sm text-text-subtle hover:text-text"
+            >
+              Remove avatar
+            </button>
+          )}
+          {avatarStatus === "error" && <p className="mt-2 text-sm text-error">{uploadError || "Upload failed"}</p>}
+          <p className="mt-2 text-xs text-text-subtle">
+            Upload a PNG or JPEG image (max 2MB). When none is set, your Gravatar (if any) is used, falling back to a
+            local placeholder.
           </p>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-text-muted mb-1">Choose image</label>
-              <input
-                type="file"
-                accept="image/png, image/jpeg"
-                onChange={handleFileChange}
-                disabled={avatarStatus === "uploading"}
-                className="w-full text-sm text-text file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:font-semibold file:btn-secondary file:cursor-pointer disabled:opacity-50"
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={uploadAvatar}
-                disabled={avatarStatus === "uploading" || !selectedFile}
-                className="btn btn-primary"
-              >
-                {avatarStatus === "uploading" ? "Uploading..." : "Upload Avatar"}
-              </button>
-              {user.avatar && (
-                <button
-                  onClick={removeAvatar}
-                  disabled={avatarStatus === "uploading"}
-                  className="text-sm text-text-subtle hover:text-text"
-                >
-                  Remove (use Gravatar)
-                </button>
-              )}
-            </div>
-            {avatarStatus === "uploaded" && <p className="text-sm text-accent">Saved</p>}
-            {avatarStatus === "error" && <p className="text-sm text-error">{uploadError || "Upload failed"}</p>}
-          </div>
         </section>
 
-        <section className="pb-6 border-b border-border">
+        <section className="pb-6">
           <h2 className="text-xl font-semibold text-text mb-4">Change Password</h2>
           <form onSubmit={savePassword} className="space-y-4 max-w-sm">
             <div>
