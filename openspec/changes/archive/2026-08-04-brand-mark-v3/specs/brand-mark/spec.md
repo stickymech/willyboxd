@@ -1,8 +1,5 @@
-# brand-mark Specification
+## ADDED Requirements
 
-## Purpose
-TBD - created by archiving change brand-mark-v3. Update Purpose after archive.
-## Requirements
 ### Requirement: Brand mark is a Letterboxd-style trio of discs containing rockets
 The Willyboxd brand mark SHALL be the approved design: three overlapping discs — orange `#F57C00`, green `#44C553`, blue `#29B6F6` — arranged diagonally on a 240×120 viewBox, each disc containing an upright phallic rocket silhouette (domed-tip capsule, no fins) in brand ink `#0F172A` with a white window.
 
