@@ -1,7 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { resolveAvatarUrl } from "../lib/api";
-import { ThemeSwitcher } from "./ThemeSwitcher";
 import { BrandMark } from "./BrandMark";
 
 export function Header() {
@@ -31,8 +30,6 @@ export function Header() {
           <NavLink to="/watchlist" className={navLinkClass}>
             Watchlist
           </NavLink>
-
-          <ThemeSwitcher />
 
           {isLoading ? null : user ? (
             <div className="flex items-center gap-3">

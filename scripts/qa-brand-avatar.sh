@@ -100,8 +100,8 @@ echo "      - Install/refresh the PWA; launcher icon is the 512-tile disc-trio w
 echo
 echo "  [B] Header brand mark"
 echo "      - Header shows the disc-trio mark (w-28 h-14) + 'Willyboxd' wordmark."
-echo "      - Switch all 4 themes (amber/spotify/runway/linear); the mark is"
-echo "        theme-agnostic (never inherits accent) on every theme."
+echo "      - The app has a single Linear palette (no theme switcher); the mark is"
+echo "        theme-agnostic (never inherits accent) on the dark surface."
 echo "      - Login + Register pages show a small transparent w-14 mark."
 echo
 echo "  [C] OG / social"
@@ -117,7 +117,7 @@ echo "      - Upload an avatar -> the uploaded image wins over the placeholder."
 echo
 echo "  [F] Settings page (avatar click navigation)"
 echo "      - Click the avatar in the header -> lands on /settings, NOT a blank page."
-echo "      - The header (theme switcher, nav, avatar, logout) is still visible."
+echo "      - The header (nav, avatar, logout) is still visible."
 echo "      - Profile card shows the current avatar image + email + username (single card)."
 echo "      - 'Upload image' / 'Change avatar' is a real primary (accent) button;"
 echo "        clicking it opens the OS file picker (PNG/JPEG <2MB) and the upload"

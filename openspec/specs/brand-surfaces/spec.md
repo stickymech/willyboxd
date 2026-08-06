@@ -15,7 +15,7 @@ The client SHALL render the in-app mark beside the "Willyboxd" wordmark in the s
 
 #### Scenario: Header brand includes the mark
 - **WHEN** the header renders
-- **THEN** the brand link shows the transparent disc-trio mark adjacent to the wordmark, regardless of active theme
+- **THEN** the brand link shows the transparent disc-trio mark adjacent to the wordmark
 
 #### Scenario: Header brand navigates home
 - **WHEN** the header brand link is clicked

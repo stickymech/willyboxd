@@ -1,12 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Watchlist } from "./Watchlist";
 import { apiFetch } from "../lib/api";
-import { ThemeProvider } from "../lib/theme";
 import type { WatchlistEntry } from "@willyboxd/shared";
 
 vi.mock("../lib/api", async (importOriginal) => {
@@ -22,12 +20,6 @@ vi.mock("../lib/auth", () => ({
     register: vi.fn(),
     logout: vi.fn(),
   }),
-}));
-
-vi.mock("../lib/theme", () => ({
-  ThemeProvider: ({ children }: { children: ReactNode }) => children,
-  useTheme: () => ({ theme: "amber", setTheme: vi.fn() }),
-  THEMES: ["amber", "spotify", "runway", "linear"],
 }));
 
 const watchlistItem: WatchlistEntry = {
@@ -57,9 +49,7 @@ function renderWatchlist() {
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
-        <ThemeProvider>
-          <Watchlist />
-        </ThemeProvider>
+        <Watchlist />
       </MemoryRouter>
     </QueryClientProvider>,
   );
