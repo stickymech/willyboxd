@@ -5,6 +5,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { authMiddleware } from "./middleware/auth";
 import { registerAuthRoutes } from "./routes/auth";
+import { avatarRoutes } from "./routes/avatars";
 import { tmdbRoutes } from "./routes/tmdb";
 import { diaryRoutes } from "./routes/diary";
 import { watchlistRoutes } from "./routes/watchlist";
@@ -45,6 +46,7 @@ app.get("/api/health", (c) => c.json({ status: "ok", version: "0.1.0" }));
 const api = app.basePath("/api");
 
 registerAuthRoutes(api);
+api.route("/avatars", avatarRoutes);
 api.route("/images", imageProxy);
 tmdbRoutes(api);
 diaryRoutes(api);

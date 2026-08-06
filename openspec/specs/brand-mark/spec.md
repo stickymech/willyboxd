@@ -1,41 +1,50 @@
 # brand-mark Specification
 
 ## Purpose
-TBD - created by archiving change brand-identity. Update Purpose after archive.
+TBD - created by archiving change brand-mark-v3. Update Purpose after archive.
 ## Requirements
-### Requirement: Slate-box product mark
-The client SHALL provide a product mark whose SVG geometry is the "slate box" design: a single bold, tall rounded box (the "box" in willyboxd) with two thick diagonal stripes across its top, clipped to the box shape. The mark SHALL read as a film clapperboard at a glance (diagonal-stripe band on a chunky slate) and SHALL NOT include a standing stick or straw-like element. The reference geometry SHALL be authored in a `64` viewBox centered horizontally: a rounded box (`rx` 7) at `x="18" y="10" width="28" height="44"` with two diagonal stripes (≈45°) clipped to it.
+### Requirement: Brand mark is a Letterboxd-style trio of discs containing rockets
+The Willyboxd brand mark SHALL be the approved design: three overlapping discs — orange `#F57C00`, green `#44C553`, blue `#29B6F6` — arranged diagonally on a 240×120 viewBox, each disc containing an upright phallic rocket silhouette (domed-tip capsule, no fins) in brand ink `#0F172A` with a white window.
 
-#### Scenario: Silhouette reads at tiny sizes
-- **WHEN** the mark is rendered at 16px (favicon size)
-- **THEN** the rounded box silhouette remains legible as a chunky slate with a visible stripe band, with no straw-like protrusion above the box
+#### Scenario: Three discs rendered
+- **WHEN** the brand mark is rendered
+- **THEN** the SVG contains three overlapping coloured discs in the approved arrangement, each containing a rocket silhouette
 
-#### Scenario: Stripes are clipped to the box
-- **WHEN** the mark is rendered at any size
-- **THEN** the two diagonal stripes never extend outside the box shape
+### Requirement: Fixed orange/green/blue palette, theme-agnostic
+The mark SHALL render its three discs in orange `#F57C00`, green `#44C553`, and blue `#29B6F6` with ink `#0F172A` rocket silhouettes. The mark SHALL be theme-agnostic: it MUST NOT depend on the runtime theme's accent token, and SHALL remain legible on all four dark runtime themes.
 
-### Requirement: Fixed brand palette
-The mark SHALL define a theme-agnostic brand palette for static assets: brand amber `#EAB308` and brand ink `#0F172A`. Static brand assets (favicon tile, launcher icons, apple-touch-icon, social image) SHALL use these fixed colors rather than runtime theme tokens, so they render identically regardless of the active theme.
+#### Scenario: Fixed colours regardless of theme
+- **WHEN** the mark is shown on any of the four runtime themes
+- **THEN** the three discs are orange, green, and blue, unchanged across themes
 
-#### Scenario: Static assets ignore runtime theme
-- **WHEN** any theme (amber, spotify, runway, linear) is active
-- **THEN** the favicon, launcher icons, and social image render with the same fixed amber/ink palette
+### Requirement: Transparent on dark in-app; dark tile for static assets
+The in-app brand mark SHALL be transparent, with the coloured discs and rockets placed directly on the dark surface. Static brand assets (favicon, launcher tiles, OG image) SHALL place the discs on a dark ink `#0F172A` background.
 
-### Requirement: Monochrome currentColor in-app variant
-The client SHALL render the in-app mark using `currentColor` so it inherits the active theme's accent token, with the box's stripes knocked out using the `--color-bg` token. The in-app mark SHALL be intended for placement on `bg` surfaces only.
+#### Scenario: Header mark is transparent
+- **WHEN** the header renders the brand mark
+- **THEN** the mark has no background; the discs and rockets show directly on the dark header surface
 
-#### Scenario: Header mark follows active theme accent
-- **WHEN** the theme changes from amber to spotify, runway, or linear
-- **THEN** the in-app mark's box renders in the new theme's accent color
+#### Scenario: Favicon uses a dark tile
+- **WHEN** the favicon is served
+- **THEN** it shows the three discs on a dark ink rounded-square tile
 
-#### Scenario: Stripes knocked out on bg surfaces
-- **WHEN** the in-app mark is placed on a `bg` surface
-- **THEN** the box's stripes render as the surrounding background color
+### Requirement: Title-bar brand block is `w-28`
+The header brand mark SHALL be sized at `w-28 h-14` (112×56) with a `text-5xl` wordmark in an `h-20` header.
 
-### Requirement: Mark accessibility
-The in-app mark SHALL be decorative: the SVG SHALL set `aria-hidden="true"` and `focusable="false"`, and the mark SHALL NOT contain text or require an accessible name of its own (the adjacent wordmark provides the product name).
+#### Scenario: Header displays the brand block
+- **WHEN** the app header renders
+- **THEN** the brand mark has the `w-28 h-14` size class and the wordmark is `text-5xl`
 
-#### Scenario: Screen readers ignore the mark
-- **WHEN** a screen reader encounters the header brand
-- **THEN** it reads the "Willyboxd" wordmark and does not announce the decorative icon
+### Requirement: Static brand assets match the new mark
+All static brand assets SHALL use the disc-trio geometry: `favicon.svg`, `mark-tile.svg`, `apple-touch-icon.svg`, `og.svg`, and the generated PNGs `icon-192.png`, `icon-512.png`, `apple-touch-icon.png`, and `og.png`.
 
+#### Scenario: PNG assets regenerated from the disc-trio geometry
+- **WHEN** the icon generation script runs
+- **THEN** it produces the PNGs with the three-disc mark at the correct sizes
+
+### Requirement: Mark is decorative and accessible
+The mark SHALL be marked decorative (`aria-hidden="true"`, `focusable="false"`) — the "Willyboxd" wordmark carries the name.
+
+#### Scenario: Assistive technology ignores the mark
+- **WHEN** the brand mark is rendered
+- **THEN** it is hidden from assistive technology and not focusable

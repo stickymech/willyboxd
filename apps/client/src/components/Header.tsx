@@ -1,5 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../lib/auth";
+import { resolveAvatarUrl } from "../lib/api";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { BrandMark } from "./BrandMark";
 
@@ -35,13 +36,13 @@ export function Header() {
 
           {isLoading ? null : user ? (
             <div className="flex items-center gap-3">
-              <Link to={`/users/${user.username}`}>
+              <Link to="/settings">
                 <img
-                  src={`https://www.gravatar.com/avatar/${user.email}?s=32&d=404`}
+                  src={resolveAvatarUrl(user.avatar) ?? "/placeholder-avatar.svg"}
                   alt={user.username}
                   className="w-8 h-8 rounded-full"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/32";
+                    (e.target as HTMLImageElement).src = "/placeholder-avatar.svg";
                   }}
                 />
               </Link>

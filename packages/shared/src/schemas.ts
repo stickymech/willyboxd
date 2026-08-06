@@ -75,3 +75,19 @@ export const ListSchema = z.object({
 });
 
 export type ListInput = z.infer<typeof ListSchema>;
+
+export const ChangePasswordSchema = z.object({
+  currentPassword: z.string().min(1, { message: "Current password is required" }),
+  newPassword: z
+    .string()
+    .min(8, { message: "New password must be at least 8 characters" })
+    .max(128, { message: "New password must be at most 128 characters" }),
+});
+
+export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
+
+export const AvatarSchema = z.object({
+  avatar: z.string().url({ message: "Must be a valid URL" }).nullable(),
+});
+
+export type AvatarInput = z.infer<typeof AvatarSchema>;

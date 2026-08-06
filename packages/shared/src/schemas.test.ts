@@ -1,5 +1,5 @@
 import { test, expect, describe } from "vitest";
-import { RegisterSchema, LoginSchema, DiaryEntrySchema, Rating } from "@willyboxd/shared";
+import { RegisterSchema, LoginSchema, DiaryEntrySchema, Rating, ChangePasswordSchema, AvatarSchema } from "@willyboxd/shared";
 
 describe("Schema Validation", () => {
   test("valid registration data passes", () => {
@@ -43,5 +43,42 @@ describe("Schema Validation", () => {
         tags: ["action", "fun"],
       }).success,
     ).toBe(true);
+  });
+
+  test("AvatarSchema accepts a valid URL or null", () => {
+    expect(AvatarSchema.safeParse({ avatar: "https://example.com/a.png" }).success).toBe(true);
+    expect(AvatarSchema.safeParse({ avatar: null }).success).toBe(true);
+  });
+
+  test("AvatarSchema rejects an invalid URL and empty string", () => {
+    expect(AvatarSchema.safeParse({ avatar: "not-a-url" }).success).toBe(false);
+    expect(AvatarSchema.safeParse({ avatar: "" }).success).toBe(false);
+  });
+
+  test("ChangePasswordSchema accepts valid input", () => {
+    expect(
+      ChangePasswordSchema.safeParse({
+        currentPassword: "password123",
+        newPassword: "newpassword123",
+      }).success,
+    ).toBe(true);
+  });
+
+  test("ChangePasswordSchema rejects short new password", () => {
+    expect(
+      ChangePasswordSchema.safeParse({
+        currentPassword: "password123",
+        newPassword: "short",
+      }).success,
+    ).toBe(false);
+  });
+
+  test("ChangePasswordSchema rejects empty current password", () => {
+    expect(
+      ChangePasswordSchema.safeParse({
+        currentPassword: "",
+        newPassword: "newpassword123",
+      }).success,
+    ).toBe(false);
   });
 });

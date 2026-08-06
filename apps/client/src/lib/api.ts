@@ -1,4 +1,11 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_ORIGIN = API_URL.replace(/\/api$/, "");
+
+export function resolveAvatarUrl(avatar: string | null): string | null {
+  if (!avatar) return null;
+  if (/^https?:\/\//i.test(avatar)) return avatar;
+  return `${API_ORIGIN}${avatar}`;
+}
 
 export interface ApiResponse<T> {
   data?: T;
@@ -44,6 +51,9 @@ export const API_ENDPOINTS = {
     login: "/auth/login",
     logout: "/auth/logout",
     me: "/auth/me",
+    update: "/auth/me",
+    updatePassword: "/auth/password",
+    upload: "/auth/avatar",
   },
   films: {
     search: "/films/search",

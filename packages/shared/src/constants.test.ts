@@ -1,5 +1,11 @@
 import { test, expect, describe } from "vitest";
-import { ratingLabel, formatMinutes, getPosterUrl, getBackdropUrl, getProfileImageUrl, RATING_OPTIONS } from "@willyboxd/shared";
+import {
+  ratingLabel,
+  formatMinutes,
+  getPosterUrl,
+  getBackdropUrl,
+  RATING_OPTIONS,
+} from "@willyboxd/shared";
 
 describe("Shared Utilities", () => {
   test("ratingLabel returns correct star display", () => {
@@ -31,15 +37,4 @@ describe("Shared Utilities", () => {
     expect(getBackdropUrl("/backdrop.jpg", "large")).toBe("https://image.tmdb.org/t/p/w1280/backdrop.jpg");
   });
 
-  test("getProfileImageUrl returns Gravatar URL", () => {
-    const url = getProfileImageUrl("test@example.com");
-    expect(url).toContain("gravatar.com/avatar/");
-    expect(url).toContain("s=200");
-  });
-
-  test("getProfileImageUrl returns null for null email", () => {
-    expect(getProfileImageUrl(null)).toBe(null);
-    expect(getProfileImageUrl(undefined)).toBe(null);
-    expect(getProfileImageUrl("")).toBe(null);
-  });
 });

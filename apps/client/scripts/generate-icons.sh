@@ -18,4 +18,6 @@ sips -g pixelWidth -g pixelHeight \
   "$SCRIPT_DIR/../public/icon-192.png" \
   "$SCRIPT_DIR/../public/icon-512.png" \
   "$SCRIPT_DIR/../public/apple-touch-icon.png" \
+  "$SCRIPT_DIR/../public/favicon-16x16.png" \
+  "$SCRIPT_DIR/../public/favicon-32x32.png" \
   "$SCRIPT_DIR/../public/og.png"

@@ -1,4 +1,3 @@
-import { md5 } from "js-md5";
 import type { RatingInput } from "./schemas.js";
 import type { FilmDetail } from "./types.js";
 
@@ -47,13 +46,6 @@ export function getBackdropUrl(path: string | null, size: keyof typeof BACKDROP_
 export function getProfileUrl(path: string | null, size: keyof typeof PROFILE_SIZES = "medium"): string | null {
   if (!path) return null;
   return `${IMAGE_BASE_URL}/${PROFILE_SIZES[size]}${path}`;
-}
-
-export const GRAVATAR_BASE_URL = "https://www.gravatar.com/avatar";
-
-export function getProfileImageUrl(email: string | undefined | null): string | null {
-  if (!email) return null;
-  return `${GRAVATAR_BASE_URL}/${md5(email.trim().toLowerCase())}?s=200&d=404`;
 }
 
 export function formatMinutes(minutes: number): { hours: number; minutes: number } {

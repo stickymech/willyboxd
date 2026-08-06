@@ -11,12 +11,12 @@
 
 ## 3. Static assets
 
-- [ ] 3.1 Redraw `favicon.svg` (64 ink rounded tile + disc trio), `mark-tile.svg` and `apple-touch-icon.svg` (512 ink tile + disc trio)
-- [ ] 3.2 Redraw `og.svg` (1200×630 ink canvas + larger disc trio + amber wordmark)
-- [ ] 3.3 Update `make-icons.py` to draw three discs + three phallic rocket silhouettes (domed capsule + nozzle + window) and composite onto the ink tile/OG canvas
-- [ ] 3.4 Regenerate `icon-192.png`, `icon-512.png`, `apple-touch-icon.png`, `og.png` via `generate-icons.sh`; verify with `sips` and PIL pixel checks
+- [x] 3.1 Redraw `favicon.svg` (64 ink rounded tile + disc trio), `mark-tile.svg` and `apple-touch-icon.svg` (512 ink tile + disc trio)
+- [x] 3.2 Redraw `og.svg` (1200×630 ink canvas + larger disc trio + amber wordmark)
+- [x] 3.3 Update `make-icons.py` to draw three discs + three phallic rocket silhouettes and composite onto the ink tile/OG canvas
+- [x] 3.4 Regenerate `icon-192.png`, `icon-512.png`, `apple-touch-icon.png`, `og.png` via `generate-icons.sh`; verified with `sips` and PIL pixel checks
 
 ## 4. Verification
 
-- [ ] 4.1 Run `npm run lint && npm run typecheck && npm run test && npm run build` — all green
+- [x] 4.1 Run `npm run lint && npm run typecheck && npm run test && npm run build` — all green
 - [ ] 4.2 Manual browser QA: header mark (all 4 themes), auth pages, favicon, and OG image — confirm the Letterboxd-style trio and the phallic read with plausible deniability
