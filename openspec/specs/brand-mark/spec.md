@@ -11,11 +11,11 @@ The Willyboxd brand mark SHALL be the approved design: three overlapping discs â
 - **THEN** the SVG contains three overlapping coloured discs in the approved arrangement, each containing a rocket silhouette
 
 ### Requirement: Fixed orange/green/blue palette, theme-agnostic
-The mark SHALL render its three discs in orange `#F57C00`, green `#44C553`, and blue `#29B6F6` with ink `#0F172A` rocket silhouettes. The mark SHALL be theme-agnostic: it MUST NOT depend on the runtime theme's accent token, and SHALL remain legible on all four dark runtime themes.
+The mark SHALL render its three discs in orange `#F57C00`, green `#44C553`, and blue `#29B6F6` with ink `#0F172A` rocket silhouettes. The mark SHALL be theme-agnostic: it MUST NOT depend on the accent token, and SHALL remain legible on the app's dark surfaces.
 
-#### Scenario: Fixed colours regardless of theme
-- **WHEN** the mark is shown on any of the four runtime themes
-- **THEN** the three discs are orange, green, and blue, unchanged across themes
+#### Scenario: Fixed colours regardless of surface
+- **WHEN** the mark is shown on a dark surface
+- **THEN** the three discs are orange, green, and blue, unchanged
 
 ### Requirement: Transparent on dark in-app; dark tile for static assets
 The in-app brand mark SHALL be transparent, with the coloured discs and rockets placed directly on the dark surface. Static brand assets (favicon, launcher tiles, OG image) SHALL place the discs on a dark ink `#0F172A` background.

@@ -9,8 +9,8 @@ context: |
     - apps/server: Hono + SQLite (better-sqlite3)
     - packages/shared: types, Zod schemas, constants
   Language: TypeScript strict
-  UI conventions: hardcoded Tailwind palette (slate-900 bg, slate-800 cards, amber-400 accent), semantic design tokens planned
-  Repo: https://github.com/stickymech/willyboxd (branch phase-1-release, PR #2, issue #1)
+  UI conventions: single fixed Linear palette via semantic CSS tokens in `:root` (no runtime theme switching); `.btn-primary`/`.btn-secondary` component classes
+  Repo: https://github.com/stickymech/willyboxd
   Quality: `npm run lint && npm run typecheck && npm run test && npm run build` all green locally
   Hobby project - YAGNI, standard tdd/git/publish model, no over-engineered CI
 
