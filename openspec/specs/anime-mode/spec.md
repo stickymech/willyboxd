@@ -36,17 +36,6 @@ The shared `MediaItem` type SHALL expose `original_language` as a nullable strin
 - **WHEN** a DB-backed `MediaItem` (diary/watchlist/list) is rendered
 - **THEN** it renders correctly with `original_language` null, since the field is not persisted
 
-### Requirement: Anime toggle on the Search page
-The Search page SHALL provide an Anime toggle that, when enabled, requests anime-filtered results and reflects the filter in the URL query string so it survives reload.
-
-#### Scenario: Toggling anime on
-- **WHEN** a user enables the Anime toggle and runs a search
-- **THEN** the request includes `anime=1` and the URL contains `anime=1`
-
-#### Scenario: Toggle persists across reload
-- **WHEN** a user searches with the Anime toggle enabled and reloads the page
-- **THEN** the toggle remains enabled and the search stays anime-filtered
-
 ### Requirement: Anime sections on the Home page
 The Home page SHALL render a "Trending Anime" section and a "Top Anime" section, each populated from the anime browse endpoint and presented with the standard film card grid.
 
