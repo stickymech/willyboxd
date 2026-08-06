@@ -53,6 +53,24 @@ and `tasks.md` (checklist; mark items complete as work lands).
 - Don't force-push destructively onto a branch mid-review without syncing
   with reviewers; prefer adding commits.
 
+### GitHub ↔ OpenSpec parity (1 issue : 1 change : 1 PR)
+
+Every change keeps a 1:1:1 track on GitHub and in OpenSpec:
+
+1. **Create the issue first.** File a GitHub issue describing the change, with
+   the acceptance criteria and a "Linked OpenSpec" note pointing at
+   `openspec/changes/<change-name>/`. The issue is the source of truth for
+   what's being worked on and is what gets closed when the work lands.
+2. **OpenSpec change tracks the same work.** Create the proposal/design/specs/
+   tasks for the same change name; the issue, the OpenSpec change, and the
+   branch/PR must all refer to the same thing.
+3. **PR references the issue.** Open the PR with `Fixes #<issue>` in the
+   body so merging closes the issue automatically, and link the OpenSpec change
+   in the PR description.
+
+Nothing ships on GitHub without its issue — if an OpenSpec change exists but no
+issue does, create the issue before opening the PR.
+
 ## Manual QA
 
 Automated tests can't cover the browser. After green checks:

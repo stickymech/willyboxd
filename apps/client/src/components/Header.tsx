@@ -2,6 +2,7 @@ import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { resolveAvatarUrl } from "../lib/api";
 import { BrandMark } from "./BrandMark";
+import { SearchBox } from "./SearchBox";
 
 export function Header() {
   const { user, isLoading, logout } = useAuth();
@@ -18,6 +19,7 @@ export function Header() {
         </Link>
 
         <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <SearchBox />
           <NavLink to="/" className={navLinkClass}>
             Home
           </NavLink>

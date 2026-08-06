@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { apiFetch, API_ENDPOINTS } from "../lib/api";
@@ -15,6 +16,7 @@ function formatDate(date: string): string {
 export function Diary() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [filter, setFilter] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["diary"],
@@ -28,6 +30,21 @@ export function Diary() {
       queryClient.invalidateQueries({ queryKey: ["diary"] });
     },
   });
+
+  const filteredEntries = useMemo(() => {
+    if (!data) return [];
+    const term = filter.trim().toLowerCase();
+    if (!term) return data.entries;
+    return data.entries.filter((entry) => {
+      const title = entry.film?.title?.toLowerCase() ?? "";
+      const review = entry.review?.toLowerCase() ?? "";
+      return (
+        title.includes(term) ||
+        entry.tags.some((tag) => tag.toLowerCase().includes(term)) ||
+        review.includes(term)
+      );
+    });
+  }, [data, filter]);
 
   return (
     <>
@@ -49,8 +66,20 @@ export function Diary() {
             Your diary is empty. Rate and review films from their detail pages to log them here.
           </p>
         ) : (
-          <ul className="divide-y divide-border">
-            {data.entries.map((entry) => (
+          <>
+            <input
+              type="text"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Filter by title, tag, or review..."
+              aria-label="Filter diary entries"
+              className="mb-6 w-full max-w-xs px-4 py-2 bg-surface border border-border rounded text-text focus:outline-none focus:border-accent"
+            />
+            {filteredEntries.length === 0 ? (
+              <p className="text-text-subtle">No diary entries match your filter.</p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {filteredEntries.map((entry) => (
               <li key={entry.id} className="py-4 flex items-start gap-4">
                 {entry.film && (
                    <Link to={`/films/${entry.film.id}?type=${entry.film?.type || "movie"}`} className="shrink-0">
@@ -96,8 +125,10 @@ export function Diary() {
                   Delete
                 </button>
               </li>
-            ))}
-          </ul>
+                ))}
+              </ul>
+            )}
+          </>
         )}
       </main>
     </>

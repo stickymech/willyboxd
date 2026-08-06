@@ -85,4 +85,11 @@ describe("Home", () => {
     expect(mockApi).toHaveBeenCalledWith("/films/anime?time=week");
     expect(mockApi).toHaveBeenCalledWith("/films/anime");
   });
+
+  it("renders the header search box", () => {
+    mockApi.mockResolvedValue({ results: [] });
+    renderHome();
+
+    expect(screen.getByRole("combobox", { name: "Search films and TV" })).toBeInTheDocument();
+  });
 });
