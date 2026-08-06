@@ -9,15 +9,14 @@ import { Header } from "../components/Header";
 export function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
-  const anime = searchParams.get("anime") === "1";
   const [inputValue, setInputValue] = useState(query);
 
   const { data, isFetching } = useQuery({
-    queryKey: ["search", query, anime],
+    queryKey: ["search", query],
     queryFn: () =>
       query
         ? apiFetch<{ results: MediaItem[] }>(
-            `${API_ENDPOINTS.films.search}?q=${encodeURIComponent(query)}${anime ? "&anime=1" : ""}`,
+            `${API_ENDPOINTS.films.search}?q=${encodeURIComponent(query)}`,
           )
         : null,
     staleTime: 5 * 60 * 1000,
@@ -26,11 +25,7 @@ export function Search() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setSearchParams({ q: inputValue, ...(anime ? { anime: "1" } : {}) });
-  };
-
-  const toggleAnime = () => {
-    setSearchParams({ q: query, ...(anime ? {} : { anime: "1" }) });
+    setSearchParams({ q: inputValue });
   };
 
   return (
@@ -44,28 +39,18 @@ export function Search() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value as string)}
               placeholder="Search for films or TV shows..."
+              aria-label="Refine search"
               className="flex-1 px-4 py-2 bg-surface border border-border rounded text-text focus:outline-none focus:border-accent"
             />
             <button type="submit" className="btn btn-primary">
               Search
             </button>
           </div>
-          <label className="mt-3 flex items-center gap-2 text-sm text-text-subtle cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={anime}
-              onChange={toggleAnime}
-              aria-label="Anime only"
-              className="h-4 w-4 rounded border-border bg-surface focus:outline-none focus:border-accent"
-              style={{ accentColor: "var(--color-accent)" }}
-            />
-            Anime only
-          </label>
         </form>
 
         {query && (
           <h2 className="text-lg font-semibold mb-4 text-text">
-            Results for "{query}"{anime ? " (anime)" : ""}
+            Results for "{query}"
           </h2>
         )}
 

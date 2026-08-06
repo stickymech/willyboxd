@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
@@ -44,45 +44,40 @@ function renderSearch(initialEntries: string[]) {
 }
 
 describe("Search", () => {
-  it("restores the anime toggle from the URL on load", async () => {
-    mockApi.mockResolvedValue({ results: [naruto] });
-
-    renderSearch(["/?q=naruto&anime=1"]);
-
-    const checkbox = screen.getByLabelText("Anime only");
-    expect(checkbox).toBeChecked();
-
-    await screen.findByText("Naruto");
-    expect(mockApi).toHaveBeenCalledWith("/films/search?q=naruto&anime=1");
+  beforeEach(() => {
+    mockApi.mockReset();
   });
 
-  it("adds anime=1 when the toggle is enabled", async () => {
+  it("renders results for the URL query without an anime filter", async () => {
     mockApi.mockResolvedValue({ results: [naruto] });
 
     renderSearch(["/?q=naruto"]);
 
     await screen.findByText("Naruto");
-    mockApi.mockClear();
-
-    const checkbox = screen.getByLabelText("Anime only");
-    await userEvent.click(checkbox);
-
-    expect(checkbox).toBeChecked();
-    await waitFor(() => expect(mockApi).toHaveBeenCalledWith("/films/search?q=naruto&anime=1"));
+    expect(mockApi).toHaveBeenCalledWith("/films/search?q=naruto");
+    expect(mockApi.mock.calls.some(([path]) => String(path).includes("anime=1"))).toBe(false);
   });
 
-  it("drops anime=1 when the toggle is disabled", async () => {
+  it("does not render an anime toggle", async () => {
+    mockApi.mockResolvedValue({ results: [] });
+
+    renderSearch(["/?q=naruto"]);
+
+    expect(screen.queryByLabelText("Anime only")).not.toBeInTheDocument();
+  });
+
+  it("refines the query from the inline form", async () => {
     mockApi.mockResolvedValue({ results: [naruto] });
 
-    renderSearch(["/?q=naruto&anime=1"]);
-
+    renderSearch(["/?q=naruto"]);
     await screen.findByText("Naruto");
     mockApi.mockClear();
 
-    const checkbox = screen.getByLabelText("Anime only");
-    await userEvent.click(checkbox);
+    const input = screen.getByRole("textbox", { name: "Refine search" });
+    await userEvent.clear(input);
+    await userEvent.type(input, "bleach");
+    await userEvent.click(screen.getByRole("button", { name: "Search" }));
 
-    expect(checkbox).not.toBeChecked();
-    await waitFor(() => expect(mockApi).toHaveBeenCalledWith("/films/search?q=naruto"));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith("/films/search?q=bleach"));
   });
 });
