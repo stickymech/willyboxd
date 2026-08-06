@@ -2,14 +2,78 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, API_ENDPOINTS } from "../lib/api";
-import type { FilmDetail, DiaryEntry, WatchlistEntry } from "@willyboxd/shared";
+import type { FilmDetail, Review, DiaryEntry, WatchlistEntry } from "@willyboxd/shared";
 import { Header } from "../components/Header";
 import { RatingSelect } from "../components/RatingSelect";
+import { Stars } from "../components/Stars";
 import { useAuth } from "../lib/auth";
 import { getPosterUrl, getBackdropUrl, getProfileUrl } from "@willyboxd/shared";
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+function reviewStarValue(rating: number | null): number | null {
+  return rating === null ? null : Math.round((rating / 2) * 2) / 2;
+}
+
+function formatReviewDate(date: string): string {
+  return new Date(date).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+
+function ReviewCard({ review }: { review: Review }) {
+  const [expanded, setExpanded] = useState(false);
+  const starValue = reviewStarValue(review.rating);
+  const avatarUrl = review.author_avatar_path?.startsWith("/") && !review.author_avatar_path.includes("http")
+    ? getProfileUrl(review.author_avatar_path, "small")
+    : null;
+
+  return (
+    <article className="bg-surface border border-border rounded-lg p-4">
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-full overflow-hidden bg-bg shrink-0">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-text-subtle">
+              {review.author.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline justify-between gap-2 flex-wrap">
+            <p className="font-semibold text-text truncate">{review.author}</p>
+            <p className="text-xs text-text-subtle shrink-0">{formatReviewDate(review.created_at)}</p>
+          </div>
+          {starValue !== null && (
+            <div className="mt-1">
+              <Stars value={starValue} size="sm" />
+            </div>
+          )}
+          <p className={`text-sm text-text-muted mt-2 whitespace-pre-line ${expanded ? "" : "line-clamp-4"}`}>
+            {review.content}
+          </p>
+          {review.content.length > 280 && (
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              className="text-sm text-accent hover:underline mt-1"
+            >
+              {expanded ? "Show less" : "Show more"}
+            </button>
+          )}
+          <a
+            href={review.url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-block text-sm text-accent hover:underline mt-2"
+          >
+            Read review ↗
+          </a>
+        </div>
+      </div>
+    </article>
+  );
 }
 
 export function FilmDetail() {
@@ -280,6 +344,17 @@ export function FilmDetail() {
                   </a>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {film.reviews.length > 0 && (
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold text-text mb-4">Reviews</h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              {film.reviews.map((review) => (
+                <ReviewCard key={review.id} review={review} />
+              ))}
             </div>
           </div>
         )}
