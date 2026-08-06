@@ -168,6 +168,24 @@ export interface TmdbImages {
   posters: { file_path: string }[];
 }
 
+export interface TmdbReview {
+  id: string;
+  author: string;
+  author_details: {
+    name: string;
+    username: string;
+    avatar_path: string | null;
+    rating: number | null;
+  };
+  content: string;
+  created_at: string;
+  url: string;
+}
+
+export interface TmdbReviews {
+  results: TmdbReview[];
+}
+
 function normalizeMediaItem(item: TmdbMediaItem): MediaItem {
   const isMovie = item.media_type === "movie" || !!item.title;
   return {
@@ -232,10 +250,11 @@ export const tmdbService = {
   },
 
   async getDetail(id: number, type: "movie" | "tv"): Promise<FilmDetail> {
-    const [detail, credits, images] = await Promise.all([
+    const [detail, credits, images, reviews] = await Promise.all([
       fetchFromApi<TmdbMovieDetail | TmdbTvDetail>(`${type}/${id}`),
       fetchFromApi<TmdbCredits>(`${type}/${id}/credits`),
       fetchFromApi<TmdbImages>(`${type}/${id}/images`),
+      fetchFromApi<TmdbReviews>(`${type}/${id}/reviews`),
     ]);
 
     const isMovie = type === "movie";
@@ -285,6 +304,15 @@ export const tmdbService = {
         backdrops: images.backdrops.slice(0, 10),
         posters: images.posters.slice(0, 10),
       },
+      reviews: reviews.results.slice(0, 5).map((r) => ({
+        id: r.id,
+        author: r.author,
+        author_avatar_path: r.author_details?.avatar_path ?? null,
+        rating: r.author_details?.rating ?? null,
+        content: r.content,
+        url: r.url,
+        created_at: r.created_at,
+      })),
     };
   },
 

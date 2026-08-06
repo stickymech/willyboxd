@@ -34,6 +34,17 @@ export type FilmDetail = MediaItem & {
     backdrops: { file_path: string }[];
     posters: { file_path: string }[];
   };
+  reviews: Review[];
+};
+
+export type Review = {
+  id: string;
+  author: string;
+  author_avatar_path: string | null;
+  rating: number | null;
+  content: string;
+  url: string;
+  created_at: string;
 };
 
 export type CastMember = {
