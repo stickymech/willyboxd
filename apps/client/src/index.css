@@ -115,6 +115,15 @@
     background-color: rgb(var(--color-bg));
     color: rgb(var(--color-text));
   }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px rgb(var(--color-surface)) inset;
+    -webkit-text-fill-color: rgb(var(--color-text));
+    caret-color: rgb(var(--color-text));
+    transition: background-color 5000s ease-in-out 0s;
+  }
 }
 
 @layer components {

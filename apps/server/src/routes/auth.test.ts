@@ -324,6 +324,23 @@ describe("Auth Routes", () => {
     });
     expect(newLogin.status).toBe(200);
   });
+
+  test("PUT /auth/password keeps the current session valid", async () => {
+    app = createTestApp();
+    const cookie = await registerAndLogin(app, "pw-session@test.com", "pwsession");
+
+    const res = await app.request("/auth/password", {
+      method: "PUT",
+      body: JSON.stringify({ currentPassword: "password123", newPassword: "brandnewpw123" }),
+      headers: { "Content-Type": "application/json", cookie },
+    });
+    expect(res.status).toBe(200);
+
+    const me = await app.request("/auth/me", { method: "GET", headers: { cookie } });
+    expect(me.status).toBe(200);
+    const data = await me.json() as { user: { username: string } | null };
+    expect(data.user?.username).toBe("pwsession");
+  });
 });
 
 describe("Avatar upload", () => {
