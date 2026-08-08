@@ -17,3 +17,12 @@
 ## 4. Quality gate
 
 - [x] 4.1 Run `npm run lint && npm run typecheck && npm run test && npm run build` and fix any failures
+
+## 5. Follow-up fixes
+
+- [x] 5.1 Make the reviews fetch non-fatal in `tmdbService.getDetail` (reviews failure resolves with `reviews: []` instead of failing the whole detail request)
+- [x] 5.2 Add server test: `getDetail` resolves with empty reviews when the reviews call rejects
+- [x] 5.3 Render an error state with "Try again" (`refetch`) in `FilmDetail.tsx` instead of infinite "Loading…" on query error, and set `retry: false` so errors surface immediately
+- [x] 5.4 Add client test: film query error renders the error state, not infinite loading
+- [x] 5.5 Render the hero aggregate score with `Stars` (vote_average / 2) on the canonical 0.5–5 scale, with no raw /10 number
+- [x] 5.6 Re-run the quality gate after the follow-up fixes

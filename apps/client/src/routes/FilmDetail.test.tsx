@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { FilmDetail } from "./FilmDetail";
@@ -104,6 +104,31 @@ describe("FilmDetail reviews", () => {
     expect(screen.queryByText("Reviews")).not.toBeInTheDocument();
   });
 
+  it("renders an error state with a retry button when the film query fails", async () => {
+    mockApi.mockRejectedValue(new Error("Network error"));
+
+    renderFilmDetail();
+
+    expect(await screen.findByText(/network error/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
+    expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+  });
+
+  it("renders the hero score with Stars on the 0.5–5 scale", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return { film: { ...baseFilm, reviews: [] } };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Fight Club")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /4\.2 out of 5 stars/i })).toBeInTheDocument();
+    expect(screen.queryByText(/\/ 10/i)).not.toBeInTheDocument();
+  });
+
   it("shows no star rating when a review has no rating", async () => {
     mockApi.mockImplementation(async (path: string) => {
       if (path === "/films/550?type=movie") {
@@ -130,6 +155,8 @@ describe("FilmDetail reviews", () => {
     renderFilmDetail();
 
     expect(await screen.findByText("NoRating")).toBeInTheDocument();
-    expect(screen.queryByRole("img", { name: /out of 5 stars/i })).not.toBeInTheDocument();
+    const reviewCard = screen.getByText("NoRating").closest("article");
+    expect(reviewCard).not.toBeNull();
+    expect(within(reviewCard as HTMLElement).queryByRole("img", { name: /out of 5 stars/i })).not.toBeInTheDocument();
   });
 });

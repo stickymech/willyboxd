@@ -5,6 +5,7 @@ import { apiFetch, API_ENDPOINTS } from "../lib/api";
 import type { DiaryEntry } from "@willyboxd/shared";
 import { getPosterUrl } from "@willyboxd/shared";
 import { Header } from "../components/Header";
+import { InlineError } from "../components/InlineError";
 import { Stars } from "../components/Stars";
 import { useAuth } from "../lib/auth";
 
@@ -18,7 +19,7 @@ export function Diary() {
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState("");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["diary"],
     queryFn: () => apiFetch<{ entries: DiaryEntry[] }>(API_ENDPOINTS.diary.list),
     enabled: !!user,
@@ -59,6 +60,11 @@ export function Diary() {
             </Link>{" "}
             to view your diary.
           </p>
+        ) : isError ? (
+          <InlineError
+            message={error instanceof Error ? error.message : "Failed to load your diary."}
+            onRetry={() => refetch()}
+          />
         ) : isLoading ? (
           <p className="text-text-subtle">Loading...</p>
         ) : !data || data.entries.length === 0 ? (

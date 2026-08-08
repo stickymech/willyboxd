@@ -92,4 +92,13 @@ describe("Home", () => {
 
     expect(screen.getByRole("combobox", { name: "Search films and TV" })).toBeInTheDocument();
   });
+
+  it("shows an error with retry instead of infinite loading when a section fails", async () => {
+    mockApi.mockRejectedValue(new Error("Failed to load."));
+
+    renderHome();
+
+    expect(await screen.findAllByRole("button", { name: /try again/i })).toHaveLength(4);
+    expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+  });
 });

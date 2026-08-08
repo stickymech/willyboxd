@@ -68,15 +68,27 @@ async function fetchFromApi<T>(path: string, query: Record<string, string | numb
     ...Object.fromEntries(Object.entries(query).map(([k, v]) => [k, String(v)])),
   });
 
-  const response = await fetch(`${BASE_URL}/${path}?${params.toString()}`);
+  const url = `${BASE_URL}/${path}?${params.toString()}`;
 
-  if (!response.ok) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await fetch(url);
+
+    if (response.ok) {
+      const data = (await response.json()) as T;
+      cache.set(cacheKey, { data, timestamp: now });
+      return data;
+    }
+
+    const retriable = response.status === 429 || response.status >= 500;
+    if (attempt === 0 && retriable) {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      continue;
+    }
+
     throw new Error(`TMDB API error: ${response.status} ${response.statusText}`);
   }
 
-  const data = (await response.json()) as T;
-  cache.set(cacheKey, { data, timestamp: now });
-  return data;
+  throw new Error("TMDB API error");
 }
 
 export interface TmdbSearchResult {
@@ -250,11 +262,16 @@ export const tmdbService = {
   },
 
   async getDetail(id: number, type: "movie" | "tv"): Promise<FilmDetail> {
+    const reviewsPromise = fetchFromApi<TmdbReviews>(`${type}/${id}/reviews`).catch((e: unknown) => {
+      console.warn(`Reviews unavailable for ${type}/${id}`, e);
+      return { results: [] as TmdbReview[] };
+    });
+
     const [detail, credits, images, reviews] = await Promise.all([
       fetchFromApi<TmdbMovieDetail | TmdbTvDetail>(`${type}/${id}`),
       fetchFromApi<TmdbCredits>(`${type}/${id}/credits`),
       fetchFromApi<TmdbImages>(`${type}/${id}/images`),
-      fetchFromApi<TmdbReviews>(`${type}/${id}/reviews`),
+      reviewsPromise,
     ]);
 
     const isMovie = type === "movie";

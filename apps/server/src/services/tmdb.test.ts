@@ -44,6 +44,36 @@ describe("TMDB Service", () => {
     await expect(tmdbService.getPopular("tv", 99)).rejects.toThrow("TMDB API error");
   });
 
+  test("retries once on a transient upstream 5xx before succeeding", async () => {
+    fetchMock
+      .mockResolvedValueOnce({ ok: false, status: 500, statusText: "Server Error", json: async () => ({}) })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        json: async () => ({
+          results: [
+            {
+              id: 1,
+              title: "Retried",
+              media_type: "movie",
+              original_language: "en",
+              poster_path: null,
+              backdrop_path: null,
+              overview: "",
+              vote_average: 8,
+              genre_ids: [],
+            },
+          ],
+        }),
+      });
+
+    const results = await tmdbService.searchMulti("retry", 1);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(results[0].title).toBe("Retried");
+  });
+
   test("maps original_language from search results", async () => {
     fetchMock.mockImplementation(async () => {
       return {
@@ -196,6 +226,34 @@ describe("TMDB Service", () => {
       rating: 8.4,
       url: "https://www.themoviedb.org/review/rev-0",
     });
+  });
+
+  test("getDetail resolves with empty reviews when the reviews call fails", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    fetchMock.mockImplementation(async (url: string) => {
+      const path = url.split("?")[0];
+      if (path.endsWith("/reviews")) {
+        return { ok: false, status: 500, statusText: "Server Error", json: async () => ({}) };
+      }
+      if (path.endsWith("/credits")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 3, cast: [], crew: [] }) };
+      }
+      if (path.endsWith("/images")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 3, backdrops: [], posters: [] }) };
+      }
+      return {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        json: async () => ({ id: 3, title: "Film", overview: "", poster_path: null, backdrop_path: null, genres: [], vote_average: 8 }),
+      };
+    });
+
+    const detail = await tmdbService.getDetail(3, "movie");
+
+    expect(detail.reviews).toEqual([]);
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
   });
 
   test("getDetail returns empty reviews when a title has none", async () => {

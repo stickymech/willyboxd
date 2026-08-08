@@ -19,6 +19,11 @@ The `GET /api/films/:id?type=movie|tv` endpoint SHALL return a `reviews` array a
 - **WHEN** a title has no reviews on TMDB
 - **THEN** the response includes an empty `reviews` array
 
+#### Scenario: Reviews endpoint fails
+
+- **WHEN** the TMDB reviews request fails or is unavailable
+- **THEN** the detail response still succeeds with an empty `reviews` array
+
 ### Requirement: Detail page renders a Reviews section
 
 The film/TV detail page SHALL render a "Reviews" section showing each review's author (with avatar when available), star rating converted from the TMDB 0–10 scale, a collapsed content snippet that expands on demand, and a "Read review" link opening the review source in a new tab.
@@ -42,3 +47,21 @@ The film/TV detail page SHALL render a "Reviews" section showing each review's a
 
 - **WHEN** the film detail response has an empty `reviews` array
 - **THEN** the page renders no Reviews section
+
+### Requirement: Detail page handles film query errors
+
+The film/TV detail page SHALL render an error state with a retry action when the detail query fails, rather than an infinite loading state.
+
+#### Scenario: Film query fails
+
+- **WHEN** the film detail query errors
+- **THEN** the page renders the error message and a "Try again" control that refetches
+
+### Requirement: Hero shows the aggregate score on the app's scale
+
+The detail page hero SHALL display the TMDB aggregate score on the app's canonical 0.5–5 star scale using the same `Stars` component used elsewhere, with no raw numeric score shown.
+
+#### Scenario: Hero score renders
+
+- **WHEN** the film detail response loads
+- **THEN** the hero renders the aggregate via `Stars` (score divided by 2), with no out-of-10 number displayed

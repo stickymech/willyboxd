@@ -94,6 +94,16 @@ describe("Watchlist", () => {
     expect(await screen.findByText(/Your watchlist is empty/)).toBeInTheDocument();
   });
 
+  it("shows an error with a retry button when loading fails", async () => {
+    mockApi.mockRejectedValue(new Error("Network error"));
+
+    renderWatchlist();
+
+    expect(await screen.findByRole("button", { name: /try again/i })).toBeInTheDocument();
+    expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    expect(screen.queryByText(/watchlist is empty/i)).not.toBeInTheDocument();
+  });
+
   it("removes a film from the watchlist", async () => {
     mockApi.mockImplementation(async (path: string) => {
       if (path === "/watchlist") return { entries: [watchlistItem] };

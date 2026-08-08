@@ -91,10 +91,11 @@ export function FilmDetail() {
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const initialized = useRef(false);
 
-  const { data: response, isLoading } = useQuery({
+  const { data: response, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["film", filmId],
     queryFn: () => apiFetch<{ film: FilmDetail }>(`${API_ENDPOINTS.films.detail(filmId)}?type=${type}`),
     staleTime: 10 * 60 * 1000,
+    retry: false,
     enabled: !!filmId,
   });
 
@@ -158,12 +159,28 @@ export function FilmDetail() {
     },
   });
 
-  if (isLoading || !response) {
+  if (isLoading) {
     return (
       <>
         <Header />
         <main className="container mx-auto px-4 py-8">
           <p className="text-text-subtle">Loading...</p>
+        </main>
+      </>
+    );
+  }
+
+  if (isError || !response) {
+    return (
+      <>
+        <Header />
+        <main className="container mx-auto px-4 py-8">
+          <p className="text-text-muted">
+            {error instanceof Error ? error.message : "Something went wrong loading this title."}
+          </p>
+          <button type="button" onClick={() => refetch()} className="btn btn-primary mt-4">
+            Try again
+          </button>
         </main>
       </>
     );
@@ -197,8 +214,7 @@ export function FilmDetail() {
                 {film.release_date?.slice(0, 4)} • {film.type === "movie" ? "Film" : "TV Series"}
               </p>
               <div className="flex items-center gap-2 mt-3">
-                <span className="text-accent">★</span>
-                <span>{film.vote_average.toFixed(1)}</span>
+                <Stars value={film.vote_average / 2} />
               </div>
               {film.runtime && (
                 <p className="text-text-muted mt-2">{film.runtime} minutes</p>
