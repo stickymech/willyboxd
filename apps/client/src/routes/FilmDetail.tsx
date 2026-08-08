@@ -7,7 +7,7 @@ import { Header } from "../components/Header";
 import { RatingSelect } from "../components/RatingSelect";
 import { Stars } from "../components/Stars";
 import { useAuth } from "../lib/auth";
-import { getPosterUrl, getBackdropUrl, getProfileUrl } from "@willyboxd/shared";
+import { getPosterUrl, getBackdropUrl, getProfileUrl, toStarRating } from "@willyboxd/shared";
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -214,8 +214,14 @@ export function FilmDetail() {
                 {film.release_date?.slice(0, 4)} • {film.type === "movie" ? "Film" : "TV Series"}
               </p>
               <div className="flex items-center gap-2 mt-3">
-                <Stars value={film.vote_average / 2} />
+                <Stars value={toStarRating(film.vote_average)} />
               </div>
+              {film.imdb_rating !== null && (
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="text-sm text-text-subtle">IMDb</span>
+                  <Stars value={toStarRating(film.imdb_rating)} size="sm" />
+                </div>
+              )}
               {film.runtime && (
                 <p className="text-text-muted mt-2">{film.runtime} minutes</p>
               )}

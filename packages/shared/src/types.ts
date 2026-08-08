@@ -34,6 +34,8 @@ export type FilmDetail = MediaItem & {
     backdrops: { file_path: string }[];
     posters: { file_path: string }[];
   };
+  imdb_id: string | null;
+  imdb_rating: number | null;
   reviews: Review[];
 };
 

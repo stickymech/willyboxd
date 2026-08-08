@@ -4,6 +4,7 @@ import {
   type FilmDetail,
   type MediaItem,
 } from "@willyboxd/shared";
+import { omdbService } from "./omdb";
 
 interface TmdbCacheEntry {
   data: unknown;
@@ -180,6 +181,11 @@ export interface TmdbImages {
   posters: { file_path: string }[];
 }
 
+export interface TmdbExternalIds {
+  id: number;
+  imdb_id: string | null;
+}
+
 export interface TmdbReview {
   id: string;
   author: string;
@@ -269,12 +275,23 @@ export const tmdbService = {
       return { results: [] as TmdbReview[] };
     });
 
-    const [detail, credits, images, reviews] = await Promise.all([
+    const externalIdsPromise = fetchFromApi<TmdbExternalIds>(`${type}/${id}/external_ids`).catch(
+      (e: unknown) => {
+        console.warn(`External IDs unavailable for ${type}/${id}`, e);
+        return { id, imdb_id: null as string | null };
+      },
+    );
+
+    const [detail, credits, images, reviews, externalIds] = await Promise.all([
       fetchFromApi<TmdbMovieDetail | TmdbTvDetail>(`${type}/${id}`),
       fetchFromApi<TmdbCredits>(`${type}/${id}/credits`),
       fetchFromApi<TmdbImages>(`${type}/${id}/images`),
       reviewsPromise,
+      externalIdsPromise,
     ]);
+
+    const imdbId = externalIds.imdb_id ?? null;
+    const imdbRating = imdbId ? await omdbService.getRating(imdbId) : null;
 
     const isMovie = type === "movie";
     const movieDetail = detail as TmdbMovieDetail;
@@ -323,6 +340,8 @@ export const tmdbService = {
         backdrops: images.backdrops.slice(0, 10),
         posters: images.posters.slice(0, 10),
       },
+      imdb_id: imdbId,
+      imdb_rating: imdbRating,
       reviews: reviews.results.slice(0, 5).map((r) => ({
         id: r.id,
         author: r.author,

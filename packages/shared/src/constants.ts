@@ -48,6 +48,10 @@ export function getProfileUrl(path: string | null, size: keyof typeof PROFILE_SI
   return `${IMAGE_BASE_URL}/${PROFILE_SIZES[size]}${path}`;
 }
 
+export function toStarRating(value: number): number {
+  return value / 2;
+}
+
 export function formatMinutes(minutes: number): { hours: number; minutes: number } {
   return {
     hours: Math.floor(minutes / 60),

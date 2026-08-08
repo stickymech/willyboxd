@@ -305,4 +305,74 @@ describe("TMDB Service", () => {
 
     expect(detail.reviews).toEqual([]);
   });
+
+  test("getDetail maps imdb_id and imdb_rating from external_ids + OMDB", async () => {
+    const originalKey = process.env.OMDB_API_KEY;
+    process.env.OMDB_API_KEY = "test-omdb-key";
+
+    fetchMock.mockImplementation(async (url: string) => {
+      const path = url.split("?")[0];
+      if (url.startsWith("https://www.omdbapi.com/")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ imdbRating: "8.8", Response: "True" }) };
+      }
+      if (path.endsWith("/external_ids")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 4, imdb_id: "tt0137523" }) };
+      }
+      if (path.endsWith("/reviews")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ results: [] }) };
+      }
+      if (path.endsWith("/credits")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 4, cast: [], crew: [] }) };
+      }
+      if (path.endsWith("/images")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 4, backdrops: [], posters: [] }) };
+      }
+      return {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        json: async () => ({ id: 4, title: "Fight Club", overview: "", poster_path: null, backdrop_path: null, genres: [], vote_average: 8.4 }),
+      };
+    });
+
+    const detail = await tmdbService.getDetail(4, "movie");
+
+    process.env.OMDB_API_KEY = originalKey;
+
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/movie/4/external_ids"));
+    expect(detail.imdb_id).toBe("tt0137523");
+    expect(detail.imdb_rating).toBe(8.8);
+  });
+
+  test("getDetail resolves imdb fields as null when external_ids fails", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    fetchMock.mockImplementation(async (url: string) => {
+      const path = url.split("?")[0];
+      if (path.endsWith("/external_ids")) {
+        return { ok: false, status: 500, statusText: "Server Error", json: async () => ({}) };
+      }
+      if (path.endsWith("/reviews")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ results: [] }) };
+      }
+      if (path.endsWith("/credits")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 5, cast: [], crew: [] }) };
+      }
+      if (path.endsWith("/images")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 5, backdrops: [], posters: [] }) };
+      }
+      return {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        json: async () => ({ id: 5, title: "Film", overview: "", poster_path: null, backdrop_path: null, genres: [], vote_average: 8 }),
+      };
+    });
+
+    const detail = await tmdbService.getDetail(5, "movie");
+
+    expect(detail.imdb_id).toBeNull();
+    expect(detail.imdb_rating).toBeNull();
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
 });

@@ -5,6 +5,7 @@ import {
   getPosterUrl,
   getBackdropUrl,
   RATING_OPTIONS,
+  toStarRating,
 } from "@willyboxd/shared";
 
 describe("Shared Utilities", () => {
@@ -13,6 +14,13 @@ describe("Shared Utilities", () => {
     expect(ratingLabel(3)).toBe("★★★");
     expect(ratingLabel(5)).toBe("★★★★★");
     expect(ratingLabel(0)).toBe("No rating");
+  });
+
+  test("toStarRating normalizes a 0–10 score to the 0.5–5 scale", () => {
+    expect(toStarRating(8.4)).toBe(4.2);
+    expect(toStarRating(10)).toBe(5);
+    expect(toStarRating(0)).toBe(0);
+    expect(toStarRating(8.8)).toBe(4.4);
   });
 
   test("formatMinutes converts correctly", () => {
