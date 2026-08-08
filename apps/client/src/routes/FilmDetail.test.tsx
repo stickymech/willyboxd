@@ -39,6 +39,8 @@ const baseFilm: FilmDetailType = {
   genres: [],
   credits: { cast: [], crew: [] },
   images: { backdrops: [], posters: [] },
+  imdb_id: null,
+  imdb_rating: null,
   reviews: [],
 };
 
@@ -127,6 +129,34 @@ describe("FilmDetail reviews", () => {
     expect(await screen.findByText("Fight Club")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /4\.2 out of 5 stars/i })).toBeInTheDocument();
     expect(screen.queryByText(/\/ 10/i)).not.toBeInTheDocument();
+  });
+
+  it("renders a labeled IMDb line when imdb_rating is present", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return { film: { ...baseFilm, imdb_id: "tt0137523", imdb_rating: 8.8, reviews: [] } };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("IMDb")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /4\.4 out of 5 stars/i })).toBeInTheDocument();
+  });
+
+  it("renders no IMDb line when imdb_rating is null", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return { film: { ...baseFilm, imdb_id: null, imdb_rating: null, reviews: [] } };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Fight Club")).toBeInTheDocument();
+    expect(screen.queryByText("IMDb")).not.toBeInTheDocument();
   });
 
   it("shows no star rating when a review has no rating", async () => {

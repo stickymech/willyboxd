@@ -46,6 +46,8 @@ const filmDetail: FilmDetail = {
   genres: [{ id: 18, name: "Drama" }],
   credits: { cast: [], crew: [] },
   images: { backdrops: [], posters: [] },
+  imdb_id: null,
+  imdb_rating: null,
   reviews: [],
 };
 

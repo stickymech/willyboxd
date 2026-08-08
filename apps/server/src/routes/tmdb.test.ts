@@ -68,6 +68,8 @@ const baseDetail: FilmDetail = {
   genres: [],
   credits: { cast: [], crew: [] },
   images: { backdrops: [], posters: [] },
+  imdb_id: null,
+  imdb_rating: null,
   reviews: [],
 };
 
