@@ -14,7 +14,7 @@ vi.mock("../services/tmdb", () => ({
 import { Hono } from "hono";
 import { tmdbRoutes } from "./tmdb";
 import { tmdbService } from "../services/tmdb";
-import type { MediaItem } from "@willyboxd/shared";
+import type { FilmDetail, MediaItem } from "@willyboxd/shared";
 
 const mocked = vi.mocked(tmdbService);
 
@@ -44,6 +44,31 @@ const westernItem: MediaItem = {
   original_language: "es",
   vote_average: 8,
   genre_ids: [16],
+};
+
+const baseDetail: FilmDetail = {
+  id: 1,
+  title: "Fight Club",
+  type: "movie",
+  poster_path: null,
+  backdrop_path: null,
+  overview: "",
+  release_date: "1999-10-15",
+  first_air_date: null,
+  original_language: "en",
+  vote_average: 8.4,
+  genre_ids: [],
+  runtime: 139,
+  budget: null,
+  revenue: null,
+  status: "Released",
+  number_of_seasons: null,
+  number_of_episodes: null,
+  last_air_date: null,
+  genres: [],
+  credits: { cast: [], crew: [] },
+  images: { backdrops: [], posters: [] },
+  reviews: [],
 };
 
 function createApp() {
@@ -115,5 +140,30 @@ describe("TMDB Routes", () => {
     expect(res.status).toBe(500);
     const data = (await res.json()) as { error: string };
     expect(data.error).toBe("Failed to fetch anime");
+  });
+
+  test("films/:id returns film details with reviews", async () => {
+    mocked.getDetail.mockResolvedValue({
+      ...baseDetail,
+      reviews: [{ id: "r1", author: "A", author_avatar_path: null, rating: 8, content: "Great", url: "https://example.com", created_at: "2020-01-01T00:00:00Z" }],
+    });
+    const app = createApp();
+
+    const res = await app.request("/films/1?type=movie");
+    expect(res.status).toBe(200);
+    expect(mocked.getDetail).toHaveBeenCalledWith(1, "movie");
+    const data = (await res.json()) as { film: FilmDetail };
+    expect(data.film.reviews).toHaveLength(1);
+    expect(data.film.reviews[0].author).toBe("A");
+  });
+
+  test("films/:id returns 500 when getDetail fails", async () => {
+    mocked.getDetail.mockRejectedValue(new Error("TMDB API error"));
+    const app = createApp();
+
+    const res = await app.request("/films/1?type=movie");
+    expect(res.status).toBe(500);
+    const data = (await res.json()) as { error: string };
+    expect(data.error).toBe("Failed to fetch film details");
   });
 });

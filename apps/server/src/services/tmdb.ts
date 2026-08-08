@@ -68,15 +68,27 @@ async function fetchFromApi<T>(path: string, query: Record<string, string | numb
     ...Object.fromEntries(Object.entries(query).map(([k, v]) => [k, String(v)])),
   });
 
-  const response = await fetch(`${BASE_URL}/${path}?${params.toString()}`);
+  const url = `${BASE_URL}/${path}?${params.toString()}`;
 
-  if (!response.ok) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await fetch(url);
+
+    if (response.ok) {
+      const data = (await response.json()) as T;
+      cache.set(cacheKey, { data, timestamp: now });
+      return data;
+    }
+
+    const retriable = response.status === 429 || response.status >= 500;
+    if (attempt === 0 && retriable) {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      continue;
+    }
+
     throw new Error(`TMDB API error: ${response.status} ${response.statusText}`);
   }
 
-  const data = (await response.json()) as T;
-  cache.set(cacheKey, { data, timestamp: now });
-  return data;
+  throw new Error("TMDB API error");
 }
 
 export interface TmdbSearchResult {
@@ -168,6 +180,24 @@ export interface TmdbImages {
   posters: { file_path: string }[];
 }
 
+export interface TmdbReview {
+  id: string;
+  author: string;
+  author_details: {
+    name: string;
+    username: string;
+    avatar_path: string | null;
+    rating: number | null;
+  };
+  content: string;
+  created_at: string;
+  url: string;
+}
+
+export interface TmdbReviews {
+  results: TmdbReview[];
+}
+
 function normalizeMediaItem(item: TmdbMediaItem): MediaItem {
   const isMovie = item.media_type === "movie" || !!item.title;
   return {
@@ -190,12 +220,14 @@ export const tmdbService = {
     return fetchFromApi<TmdbSearchResult>("search/multi", { query, page, include_adult: "false" });
   },
 
-  getTrending(timeWindow: "day" | "week" = "week"): Promise<{ results: TmdbMediaItem[] }> {
-    return fetchFromApi<{ results: TmdbMediaItem[] }>(`trending/all/${timeWindow}`);
+  async getTrending(timeWindow: "day" | "week" = "week"): Promise<{ results: MediaItem[] }> {
+    const data = await fetchFromApi<{ results: TmdbMediaItem[] }>(`trending/all/${timeWindow}`);
+    return { results: data.results.map(normalizeMediaItem) };
   },
 
-  getPopular(type: "movie" | "tv", page: number = 1): Promise<{ results: TmdbMediaItem[] }> {
-    return fetchFromApi<{ results: TmdbMediaItem[] }>(`${type}/popular`, { page });
+  async getPopular(type: "movie" | "tv", page: number = 1): Promise<{ results: MediaItem[] }> {
+    const data = await fetchFromApi<{ results: TmdbMediaItem[] }>(`${type}/popular`, { page });
+    return { results: data.results.map(normalizeMediaItem) };
   },
 
   async getAnime(timeWindow: "day" | "week" | undefined, page: number = 1): Promise<MediaItem[]> {
@@ -232,10 +264,16 @@ export const tmdbService = {
   },
 
   async getDetail(id: number, type: "movie" | "tv"): Promise<FilmDetail> {
-    const [detail, credits, images] = await Promise.all([
+    const reviewsPromise = fetchFromApi<TmdbReviews>(`${type}/${id}/reviews`).catch((e: unknown) => {
+      console.warn(`Reviews unavailable for ${type}/${id}`, e);
+      return { results: [] as TmdbReview[] };
+    });
+
+    const [detail, credits, images, reviews] = await Promise.all([
       fetchFromApi<TmdbMovieDetail | TmdbTvDetail>(`${type}/${id}`),
       fetchFromApi<TmdbCredits>(`${type}/${id}/credits`),
       fetchFromApi<TmdbImages>(`${type}/${id}/images`),
+      reviewsPromise,
     ]);
 
     const isMovie = type === "movie";
@@ -285,11 +323,21 @@ export const tmdbService = {
         backdrops: images.backdrops.slice(0, 10),
         posters: images.posters.slice(0, 10),
       },
+      reviews: reviews.results.slice(0, 5).map((r) => ({
+        id: r.id,
+        author: r.author,
+        author_avatar_path: r.author_details?.avatar_path ?? null,
+        rating: r.author_details?.rating ?? null,
+        content: r.content,
+        url: r.url,
+        created_at: r.created_at,
+      })),
     };
   },
 
-  getRecommendations(id: number, type: "movie" | "tv"): Promise<{ results: TmdbMediaItem[] }> {
-    return fetchFromApi<{ results: TmdbMediaItem[] }>(`${type}/${id}/recommendations`);
+  async getRecommendations(id: number, type: "movie" | "tv"): Promise<{ results: MediaItem[] }> {
+    const data = await fetchFromApi<{ results: TmdbMediaItem[] }>(`${type}/${id}/recommendations`);
+    return { results: data.results.map(normalizeMediaItem) };
   },
 
   async searchMulti(query: string, page: number = 1): Promise<MediaItem[]> {

@@ -5,6 +5,7 @@ import { apiFetch, API_ENDPOINTS } from "../lib/api";
 import type { WatchlistEntry } from "@willyboxd/shared";
 import { FilmCard } from "../components/FilmCard";
 import { Header } from "../components/Header";
+import { InlineError } from "../components/InlineError";
 import { useAuth } from "../lib/auth";
 
 export function Watchlist() {
@@ -12,7 +13,7 @@ export function Watchlist() {
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState("");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["watchlist"],
     queryFn: () => apiFetch<{ entries: WatchlistEntry[] }>(API_ENDPOINTS.watchlist.list),
     enabled: !!user,
@@ -48,6 +49,11 @@ export function Watchlist() {
             </Link>{" "}
             to view your watchlist.
           </p>
+        ) : isError ? (
+          <InlineError
+            message={error instanceof Error ? error.message : "Failed to load your watchlist."}
+            onRetry={() => refetch()}
+          />
         ) : isLoading ? (
           <p className="text-text-subtle">Loading...</p>
         ) : !data || data.entries.length === 0 ? (
