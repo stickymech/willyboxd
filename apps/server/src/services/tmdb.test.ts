@@ -44,6 +44,26 @@ describe("TMDB Service", () => {
     await expect(tmdbService.getPopular("tv", 99)).rejects.toThrow("TMDB API error");
   });
 
+  test("getTrending normalizes raw results into MediaItems (type + title)", async () => {
+    fetchMock.mockImplementation(async () => ({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      json: async () => ({
+        results: [
+          { id: 1, title: "Movie A", media_type: "movie", original_language: "en", poster_path: null, backdrop_path: null, overview: "", vote_average: 8, genre_ids: [16] },
+          { id: 2, name: "Show B", media_type: "tv", original_language: "ja", poster_path: null, backdrop_path: null, overview: "", vote_average: 9, genre_ids: [16] },
+        ],
+      }),
+    }));
+
+    const { results } = await tmdbService.getTrending("week");
+
+    expect(results).toHaveLength(2);
+    expect(results[0]).toMatchObject({ id: 1, title: "Movie A", type: "movie" });
+    expect(results[1]).toMatchObject({ id: 2, title: "Show B", type: "tv" });
+  });
+
   test("retries once on a transient upstream 5xx before succeeding", async () => {
     fetchMock
       .mockResolvedValueOnce({ ok: false, status: 500, statusText: "Server Error", json: async () => ({}) })

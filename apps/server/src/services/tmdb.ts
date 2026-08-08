@@ -220,12 +220,14 @@ export const tmdbService = {
     return fetchFromApi<TmdbSearchResult>("search/multi", { query, page, include_adult: "false" });
   },
 
-  getTrending(timeWindow: "day" | "week" = "week"): Promise<{ results: TmdbMediaItem[] }> {
-    return fetchFromApi<{ results: TmdbMediaItem[] }>(`trending/all/${timeWindow}`);
+  async getTrending(timeWindow: "day" | "week" = "week"): Promise<{ results: MediaItem[] }> {
+    const data = await fetchFromApi<{ results: TmdbMediaItem[] }>(`trending/all/${timeWindow}`);
+    return { results: data.results.map(normalizeMediaItem) };
   },
 
-  getPopular(type: "movie" | "tv", page: number = 1): Promise<{ results: TmdbMediaItem[] }> {
-    return fetchFromApi<{ results: TmdbMediaItem[] }>(`${type}/popular`, { page });
+  async getPopular(type: "movie" | "tv", page: number = 1): Promise<{ results: MediaItem[] }> {
+    const data = await fetchFromApi<{ results: TmdbMediaItem[] }>(`${type}/popular`, { page });
+    return { results: data.results.map(normalizeMediaItem) };
   },
 
   async getAnime(timeWindow: "day" | "week" | undefined, page: number = 1): Promise<MediaItem[]> {
@@ -333,8 +335,9 @@ export const tmdbService = {
     };
   },
 
-  getRecommendations(id: number, type: "movie" | "tv"): Promise<{ results: TmdbMediaItem[] }> {
-    return fetchFromApi<{ results: TmdbMediaItem[] }>(`${type}/${id}/recommendations`);
+  async getRecommendations(id: number, type: "movie" | "tv"): Promise<{ results: MediaItem[] }> {
+    const data = await fetchFromApi<{ results: TmdbMediaItem[] }>(`${type}/${id}/recommendations`);
+    return { results: data.results.map(normalizeMediaItem) };
   },
 
   async searchMulti(query: string, page: number = 1): Promise<MediaItem[]> {
