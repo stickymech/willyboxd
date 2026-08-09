@@ -70,6 +70,8 @@ const baseDetail: FilmDetail = {
   images: { backdrops: [], posters: [] },
   imdb_id: null,
   imdb_rating: null,
+  rt_rating: null,
+  metacritic_rating: null,
   reviews: [],
 };
 

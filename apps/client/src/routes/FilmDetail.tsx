@@ -7,7 +7,7 @@ import { Header } from "../components/Header";
 import { RatingSelect } from "../components/RatingSelect";
 import { Stars } from "../components/Stars";
 import { useAuth } from "../lib/auth";
-import { getPosterUrl, getBackdropUrl, getProfileUrl, toStarRating } from "@willyboxd/shared";
+import { getPosterUrl, getBackdropUrl, getProfileUrl, toStarRating, toHundredStarRating } from "@willyboxd/shared";
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -220,6 +220,18 @@ export function FilmDetail() {
                 <div className="flex items-center gap-2 mt-1.5">
                   <span className="text-sm text-text-subtle">IMDb</span>
                   <Stars value={toStarRating(film.imdb_rating)} size="sm" />
+                </div>
+              )}
+              {film.rt_rating !== null && (
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="text-sm text-text-subtle">Rotten Tomatoes</span>
+                  <Stars value={toHundredStarRating(film.rt_rating)} size="sm" />
+                </div>
+              )}
+              {film.metacritic_rating !== null && (
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="text-sm text-text-subtle">Metacritic</span>
+                  <Stars value={toHundredStarRating(film.metacritic_rating)} size="sm" />
                 </div>
               )}
               {film.runtime && (

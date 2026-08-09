@@ -291,7 +291,7 @@ export const tmdbService = {
     ]);
 
     const imdbId = externalIds.imdb_id ?? null;
-    const imdbRating = imdbId ? await omdbService.getRating(imdbId) : null;
+    const ratings = imdbId ? await omdbService.getRatings(imdbId) : { imdb: null, rt: null, metacritic: null };
 
     const isMovie = type === "movie";
     const movieDetail = detail as TmdbMovieDetail;
@@ -341,7 +341,9 @@ export const tmdbService = {
         posters: images.posters.slice(0, 10),
       },
       imdb_id: imdbId,
-      imdb_rating: imdbRating,
+      imdb_rating: ratings.imdb,
+      rt_rating: ratings.rt,
+      metacritic_rating: ratings.metacritic,
       reviews: reviews.results.slice(0, 5).map((r) => ({
         id: r.id,
         author: r.author,

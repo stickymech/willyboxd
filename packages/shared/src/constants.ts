@@ -52,6 +52,10 @@ export function toStarRating(value: number): number {
   return value / 2;
 }
 
+export function toHundredStarRating(value: number): number {
+  return value / 20;
+}
+
 export function formatMinutes(minutes: number): { hours: number; minutes: number } {
   return {
     hours: Math.floor(minutes / 60),

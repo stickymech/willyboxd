@@ -36,6 +36,8 @@ export type FilmDetail = MediaItem & {
   };
   imdb_id: string | null;
   imdb_rating: number | null;
+  rt_rating: number | null;
+  metacritic_rating: number | null;
   reviews: Review[];
 };
 
