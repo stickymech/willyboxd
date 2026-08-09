@@ -7,7 +7,7 @@ import { Header } from "../components/Header";
 import { RatingSelect } from "../components/RatingSelect";
 import { Stars } from "../components/Stars";
 import { useAuth } from "../lib/auth";
-import { getPosterUrl, getBackdropUrl, getProfileUrl, toStarRating, toHundredStarRating } from "@willyboxd/shared";
+import { getPosterUrl, getBackdropUrl, getProfileUrl, toStarRating, toHundredStarRating, getImdbUrl, getTmdbUrl, getReviewSourceLabel } from "@willyboxd/shared";
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -24,6 +24,7 @@ function formatReviewDate(date: string): string {
 function ReviewCard({ review }: { review: Review }) {
   const [expanded, setExpanded] = useState(false);
   const starValue = reviewStarValue(review.rating);
+  const sourceLabel = getReviewSourceLabel(review.url);
   const avatarUrl = review.author_avatar_path?.startsWith("/") && !review.author_avatar_path.includes("http")
     ? getProfileUrl(review.author_avatar_path, "small")
     : null;
@@ -62,6 +63,7 @@ function ReviewCard({ review }: { review: Review }) {
               {expanded ? "Show less" : "Show more"}
             </button>
           )}
+          {sourceLabel && <p className="text-xs text-text-subtle mt-2">via {sourceLabel}</p>}
           <a
             href={review.url}
             target="_blank"
@@ -234,6 +236,26 @@ export function FilmDetail() {
                   <Stars value={toHundredStarRating(film.metacritic_rating)} size="sm" />
                 </div>
               )}
+              <div className="flex flex-wrap items-center gap-3 mt-2">
+                {film.imdb_id && (
+                  <a
+                    href={getImdbUrl(film.imdb_id)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm text-accent hover:underline"
+                  >
+                    View on IMDb ↗
+                  </a>
+                )}
+                <a
+                  href={getTmdbUrl(film.id, film.type)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-accent hover:underline"
+                >
+                  View on TMDB ↗
+                </a>
+              </div>
               {film.runtime && (
                 <p className="text-text-muted mt-2">{film.runtime} minutes</p>
               )}

@@ -48,12 +48,40 @@ export function getProfileUrl(path: string | null, size: keyof typeof PROFILE_SI
   return `${IMAGE_BASE_URL}/${PROFILE_SIZES[size]}${path}`;
 }
 
+export function getImdbUrl(imdbId: string): string {
+  return `https://www.imdb.com/title/${imdbId}`;
+}
+
+export function getTmdbUrl(id: number, type: "movie" | "tv"): string {
+  return `https://www.themoviedb.org/${type}/${id}`;
+}
+
 export function toStarRating(value: number): number {
   return value / 2;
 }
 
 export function toHundredStarRating(value: number): number {
   return value / 20;
+}
+
+const REVIEW_SOURCE_NAMES: Record<string, string> = {
+  "themoviedb.org": "TMDB",
+  "imdb.com": "IMDb",
+  "rottentomatoes.com": "Rotten Tomatoes",
+  "metacritic.com": "Metacritic",
+  "letterboxd.com": "Letterboxd",
+};
+
+export function getReviewSourceLabel(url: string | null | undefined): string | null {
+  if (!url) return null;
+  let hostname: string;
+  try {
+    hostname = new URL(url).hostname;
+  } catch {
+    return null;
+  }
+  const host = hostname.replace(/^www\./, "");
+  return REVIEW_SOURCE_NAMES[host] ?? host;
 }
 
 export function formatMinutes(minutes: number): { hours: number; minutes: number } {

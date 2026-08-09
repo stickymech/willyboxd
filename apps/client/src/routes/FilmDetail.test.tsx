@@ -94,6 +94,93 @@ describe("FilmDetail reviews", () => {
     );
   });
 
+  it("renders a source label for a review from a known site", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return {
+          film: {
+            ...baseFilm,
+            reviews: [
+              {
+                id: "r1",
+                author: "Goddard",
+                author_avatar_path: null,
+                rating: 8,
+                content: "Pretty awesome movie.",
+                url: "https://www.themoviedb.org/review/r1",
+                created_at: "2018-06-09T17:51:53.359Z",
+              },
+            ],
+          },
+        };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Reviews")).toBeInTheDocument();
+    expect(screen.getByText("via TMDB")).toBeInTheDocument();
+  });
+
+  it("renders a readable hostname label for a review from an unknown site", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return {
+          film: {
+            ...baseFilm,
+            reviews: [
+              {
+                id: "r1",
+                author: "Goddard",
+                author_avatar_path: null,
+                rating: 8,
+                content: "Pretty awesome movie.",
+                url: "https://www.example.co.uk/review/r1",
+                created_at: "2018-06-09T17:51:53.359Z",
+              },
+            ],
+          },
+        };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Reviews")).toBeInTheDocument();
+    expect(screen.getByText("via example.co.uk")).toBeInTheDocument();
+  });
+
+  it("renders no source label when the review URL is missing", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return {
+          film: {
+            ...baseFilm,
+            reviews: [
+              {
+                id: "r1",
+                author: "Goddard",
+                author_avatar_path: null,
+                rating: 8,
+                content: "Pretty awesome movie.",
+                url: "",
+                created_at: "2018-06-09T17:51:53.359Z",
+              },
+            ],
+          },
+        };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Reviews")).toBeInTheDocument();
+    expect(screen.queryByText(/^via /)).not.toBeInTheDocument();
+  });
+
   it("renders no Reviews section when reviews are empty", async () => {
     mockApi.mockImplementation(async (path: string) => {
       if (path === "/films/550?type=movie") {
@@ -209,6 +296,64 @@ describe("FilmDetail reviews", () => {
     expect(await screen.findByText("Metacritic")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /^4 out of 5 stars$/i })).toBeInTheDocument();
     expect(screen.queryByText("Rotten Tomatoes")).not.toBeInTheDocument();
+  });
+
+  it("renders View on IMDb and View on TMDB links with correct hrefs", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return { film: { ...baseFilm, imdb_id: "tt0137523", imdb_rating: 8.8, reviews: [] } };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Fight Club")).toBeInTheDocument();
+    const imdbLink = screen.getByRole("link", { name: /view on imdb/i });
+    expect(imdbLink).toHaveAttribute("href", "https://www.imdb.com/title/tt0137523");
+    expect(imdbLink).toHaveAttribute("target", "_blank");
+    expect(imdbLink).toHaveAttribute("rel", "noreferrer");
+    const tmdbLink = screen.getByRole("link", { name: /view on tmdb/i });
+    expect(tmdbLink).toHaveAttribute("href", "https://www.themoviedb.org/movie/550");
+    expect(tmdbLink).toHaveAttribute("target", "_blank");
+    expect(tmdbLink).toHaveAttribute("rel", "noreferrer");
+  });
+
+  it("renders View on TMDB link but no View on IMDb link when imdb_id is null", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return { film: { ...baseFilm, imdb_id: null, imdb_rating: null, reviews: [] } };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Fight Club")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view on tmdb/i })).toHaveAttribute(
+      "href",
+      "https://www.themoviedb.org/movie/550",
+    );
+    expect(screen.queryByRole("link", { name: /view on imdb/i })).not.toBeInTheDocument();
+  });
+
+  it("renders a View on TMDB link for a tv title", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return {
+          film: { ...baseFilm, id: 123, type: "tv", title: "Cowboy Bebop", imdb_id: null, imdb_rating: null, reviews: [] },
+        };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Cowboy Bebop")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view on tmdb/i })).toHaveAttribute(
+      "href",
+      "https://www.themoviedb.org/tv/123",
+    );
   });
 
   it("shows no star rating when a review has no rating", async () => {

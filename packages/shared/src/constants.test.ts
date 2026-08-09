@@ -4,6 +4,9 @@ import {
   formatMinutes,
   getPosterUrl,
   getBackdropUrl,
+  getImdbUrl,
+  getTmdbUrl,
+  getReviewSourceLabel,
   RATING_OPTIONS,
   toStarRating,
   toHundredStarRating,
@@ -51,6 +54,34 @@ describe("Shared Utilities", () => {
 
   test("getBackdropUrl constructs correct URL", () => {
     expect(getBackdropUrl("/backdrop.jpg", "large")).toBe("https://image.tmdb.org/t/p/w1280/backdrop.jpg");
+  });
+
+  test("getImdbUrl constructs the IMDb title URL", () => {
+    expect(getImdbUrl("tt0137523")).toBe("https://www.imdb.com/title/tt0137523");
+  });
+
+  test("getTmdbUrl constructs movie and tv URLs", () => {
+    expect(getTmdbUrl(550, "movie")).toBe("https://www.themoviedb.org/movie/550");
+    expect(getTmdbUrl(123, "tv")).toBe("https://www.themoviedb.org/tv/123");
+  });
+
+  test("getReviewSourceLabel maps known sites to friendly names", () => {
+    expect(getReviewSourceLabel("https://www.themoviedb.org/review/abc123")).toBe("TMDB");
+    expect(getReviewSourceLabel("https://www.imdb.com/review/abc123")).toBe("IMDb");
+    expect(getReviewSourceLabel("https://rottentomatoes.com/review/abc123")).toBe("Rotten Tomatoes");
+    expect(getReviewSourceLabel("https://www.metacritic.com/review/abc123")).toBe("Metacritic");
+  });
+
+  test("getReviewSourceLabel strips www and returns the hostname for unknown sites", () => {
+    expect(getReviewSourceLabel("https://www.example.co.uk/review/1")).toBe("example.co.uk");
+    expect(getReviewSourceLabel("https://example.com/review/1")).toBe("example.com");
+  });
+
+  test("getReviewSourceLabel returns null for missing or malformed URLs", () => {
+    expect(getReviewSourceLabel(null)).toBeNull();
+    expect(getReviewSourceLabel(undefined)).toBeNull();
+    expect(getReviewSourceLabel("")).toBeNull();
+    expect(getReviewSourceLabel("not a url")).toBeNull();
   });
 
 });
