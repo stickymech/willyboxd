@@ -7,7 +7,7 @@ import { Header } from "../components/Header";
 import { RatingSelect } from "../components/RatingSelect";
 import { Stars } from "../components/Stars";
 import { useAuth } from "../lib/auth";
-import { getPosterUrl, getBackdropUrl, getProfileUrl, toStarRating, getReviewSourceLabel } from "@willyboxd/shared";
+import { getPosterUrl, getBackdropUrl, getProfileUrl, toStarRating, getImdbUrl, getTmdbUrl, getReviewSourceLabel } from "@willyboxd/shared";
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -224,6 +224,26 @@ export function FilmDetail() {
                   <Stars value={toStarRating(film.imdb_rating)} size="sm" />
                 </div>
               )}
+              <div className="flex flex-wrap items-center gap-3 mt-2">
+                {film.imdb_id && (
+                  <a
+                    href={getImdbUrl(film.imdb_id)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm text-accent hover:underline"
+                  >
+                    View on IMDb ↗
+                  </a>
+                )}
+                <a
+                  href={getTmdbUrl(film.id, film.type)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-accent hover:underline"
+                >
+                  View on TMDB ↗
+                </a>
+              </div>
               {film.runtime && (
                 <p className="text-text-muted mt-2">{film.runtime} minutes</p>
               )}

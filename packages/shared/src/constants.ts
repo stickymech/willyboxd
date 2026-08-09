@@ -48,6 +48,14 @@ export function getProfileUrl(path: string | null, size: keyof typeof PROFILE_SI
   return `${IMAGE_BASE_URL}/${PROFILE_SIZES[size]}${path}`;
 }
 
+export function getImdbUrl(imdbId: string): string {
+  return `https://www.imdb.com/title/${imdbId}`;
+}
+
+export function getTmdbUrl(id: number, type: "movie" | "tv"): string {
+  return `https://www.themoviedb.org/${type}/${id}`;
+}
+
 export function toStarRating(value: number): number {
   return value / 2;
 }

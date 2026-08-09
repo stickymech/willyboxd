@@ -4,6 +4,8 @@ import {
   formatMinutes,
   getPosterUrl,
   getBackdropUrl,
+  getImdbUrl,
+  getTmdbUrl,
   getReviewSourceLabel,
   RATING_OPTIONS,
   toStarRating,
@@ -44,6 +46,15 @@ describe("Shared Utilities", () => {
 
   test("getBackdropUrl constructs correct URL", () => {
     expect(getBackdropUrl("/backdrop.jpg", "large")).toBe("https://image.tmdb.org/t/p/w1280/backdrop.jpg");
+  });
+
+  test("getImdbUrl constructs the IMDb title URL", () => {
+    expect(getImdbUrl("tt0137523")).toBe("https://www.imdb.com/title/tt0137523");
+  });
+
+  test("getTmdbUrl constructs movie and tv URLs", () => {
+    expect(getTmdbUrl(550, "movie")).toBe("https://www.themoviedb.org/movie/550");
+    expect(getTmdbUrl(123, "tv")).toBe("https://www.themoviedb.org/tv/123");
   });
 
   test("getReviewSourceLabel maps known sites to friendly names", () => {

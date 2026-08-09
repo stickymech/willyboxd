@@ -246,6 +246,64 @@ describe("FilmDetail reviews", () => {
     expect(screen.queryByText("IMDb")).not.toBeInTheDocument();
   });
 
+  it("renders View on IMDb and View on TMDB links with correct hrefs", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return { film: { ...baseFilm, imdb_id: "tt0137523", imdb_rating: 8.8, reviews: [] } };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Fight Club")).toBeInTheDocument();
+    const imdbLink = screen.getByRole("link", { name: /view on imdb/i });
+    expect(imdbLink).toHaveAttribute("href", "https://www.imdb.com/title/tt0137523");
+    expect(imdbLink).toHaveAttribute("target", "_blank");
+    expect(imdbLink).toHaveAttribute("rel", "noreferrer");
+    const tmdbLink = screen.getByRole("link", { name: /view on tmdb/i });
+    expect(tmdbLink).toHaveAttribute("href", "https://www.themoviedb.org/movie/550");
+    expect(tmdbLink).toHaveAttribute("target", "_blank");
+    expect(tmdbLink).toHaveAttribute("rel", "noreferrer");
+  });
+
+  it("renders View on TMDB link but no View on IMDb link when imdb_id is null", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return { film: { ...baseFilm, imdb_id: null, imdb_rating: null, reviews: [] } };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Fight Club")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view on tmdb/i })).toHaveAttribute(
+      "href",
+      "https://www.themoviedb.org/movie/550",
+    );
+    expect(screen.queryByRole("link", { name: /view on imdb/i })).not.toBeInTheDocument();
+  });
+
+  it("renders a View on TMDB link for a tv title", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return {
+          film: { ...baseFilm, id: 123, type: "tv", title: "Cowboy Bebop", imdb_id: null, imdb_rating: null, reviews: [] },
+        };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Cowboy Bebop")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view on tmdb/i })).toHaveAttribute(
+      "href",
+      "https://www.themoviedb.org/tv/123",
+    );
+  });
+
   it("shows no star rating when a review has no rating", async () => {
     mockApi.mockImplementation(async (path: string) => {
       if (path === "/films/550?type=movie") {
