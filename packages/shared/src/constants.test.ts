@@ -4,6 +4,7 @@ import {
   formatMinutes,
   getPosterUrl,
   getBackdropUrl,
+  getReviewSourceLabel,
   RATING_OPTIONS,
   toStarRating,
 } from "@willyboxd/shared";
@@ -43,6 +44,25 @@ describe("Shared Utilities", () => {
 
   test("getBackdropUrl constructs correct URL", () => {
     expect(getBackdropUrl("/backdrop.jpg", "large")).toBe("https://image.tmdb.org/t/p/w1280/backdrop.jpg");
+  });
+
+  test("getReviewSourceLabel maps known sites to friendly names", () => {
+    expect(getReviewSourceLabel("https://www.themoviedb.org/review/abc123")).toBe("TMDB");
+    expect(getReviewSourceLabel("https://www.imdb.com/review/abc123")).toBe("IMDb");
+    expect(getReviewSourceLabel("https://rottentomatoes.com/review/abc123")).toBe("Rotten Tomatoes");
+    expect(getReviewSourceLabel("https://www.metacritic.com/review/abc123")).toBe("Metacritic");
+  });
+
+  test("getReviewSourceLabel strips www and returns the hostname for unknown sites", () => {
+    expect(getReviewSourceLabel("https://www.example.co.uk/review/1")).toBe("example.co.uk");
+    expect(getReviewSourceLabel("https://example.com/review/1")).toBe("example.com");
+  });
+
+  test("getReviewSourceLabel returns null for missing or malformed URLs", () => {
+    expect(getReviewSourceLabel(null)).toBeNull();
+    expect(getReviewSourceLabel(undefined)).toBeNull();
+    expect(getReviewSourceLabel("")).toBeNull();
+    expect(getReviewSourceLabel("not a url")).toBeNull();
   });
 
 });
