@@ -7,7 +7,7 @@ import { Header } from "../components/Header";
 import { RatingSelect } from "../components/RatingSelect";
 import { Stars } from "../components/Stars";
 import { useAuth } from "../lib/auth";
-import { getPosterUrl, getBackdropUrl, getProfileUrl, toStarRating, getImdbUrl, getTmdbUrl } from "@willyboxd/shared";
+import { getPosterUrl, getBackdropUrl, getProfileUrl, toStarRating, getImdbUrl, getTmdbUrl, getReviewSourceLabel } from "@willyboxd/shared";
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -24,6 +24,7 @@ function formatReviewDate(date: string): string {
 function ReviewCard({ review }: { review: Review }) {
   const [expanded, setExpanded] = useState(false);
   const starValue = reviewStarValue(review.rating);
+  const sourceLabel = getReviewSourceLabel(review.url);
   const avatarUrl = review.author_avatar_path?.startsWith("/") && !review.author_avatar_path.includes("http")
     ? getProfileUrl(review.author_avatar_path, "small")
     : null;
@@ -62,6 +63,7 @@ function ReviewCard({ review }: { review: Review }) {
               {expanded ? "Show less" : "Show more"}
             </button>
           )}
+          {sourceLabel && <p className="text-xs text-text-subtle mt-2">via {sourceLabel}</p>}
           <a
             href={review.url}
             target="_blank"

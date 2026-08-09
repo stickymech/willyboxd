@@ -60,6 +60,26 @@ export function toStarRating(value: number): number {
   return value / 2;
 }
 
+const REVIEW_SOURCE_NAMES: Record<string, string> = {
+  "themoviedb.org": "TMDB",
+  "imdb.com": "IMDb",
+  "rottentomatoes.com": "Rotten Tomatoes",
+  "metacritic.com": "Metacritic",
+  "letterboxd.com": "Letterboxd",
+};
+
+export function getReviewSourceLabel(url: string | null | undefined): string | null {
+  if (!url) return null;
+  let hostname: string;
+  try {
+    hostname = new URL(url).hostname;
+  } catch {
+    return null;
+  }
+  const host = hostname.replace(/^www\./, "");
+  return REVIEW_SOURCE_NAMES[host] ?? host;
+}
+
 export function formatMinutes(minutes: number): { hours: number; minutes: number } {
   return {
     hours: Math.floor(minutes / 60),
