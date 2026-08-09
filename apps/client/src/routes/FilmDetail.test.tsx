@@ -92,6 +92,93 @@ describe("FilmDetail reviews", () => {
     );
   });
 
+  it("renders a source label for a review from a known site", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return {
+          film: {
+            ...baseFilm,
+            reviews: [
+              {
+                id: "r1",
+                author: "Goddard",
+                author_avatar_path: null,
+                rating: 8,
+                content: "Pretty awesome movie.",
+                url: "https://www.themoviedb.org/review/r1",
+                created_at: "2018-06-09T17:51:53.359Z",
+              },
+            ],
+          },
+        };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Reviews")).toBeInTheDocument();
+    expect(screen.getByText("via TMDB")).toBeInTheDocument();
+  });
+
+  it("renders a readable hostname label for a review from an unknown site", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return {
+          film: {
+            ...baseFilm,
+            reviews: [
+              {
+                id: "r1",
+                author: "Goddard",
+                author_avatar_path: null,
+                rating: 8,
+                content: "Pretty awesome movie.",
+                url: "https://www.example.co.uk/review/r1",
+                created_at: "2018-06-09T17:51:53.359Z",
+              },
+            ],
+          },
+        };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Reviews")).toBeInTheDocument();
+    expect(screen.getByText("via example.co.uk")).toBeInTheDocument();
+  });
+
+  it("renders no source label when the review URL is missing", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return {
+          film: {
+            ...baseFilm,
+            reviews: [
+              {
+                id: "r1",
+                author: "Goddard",
+                author_avatar_path: null,
+                rating: 8,
+                content: "Pretty awesome movie.",
+                url: "",
+                created_at: "2018-06-09T17:51:53.359Z",
+              },
+            ],
+          },
+        };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Reviews")).toBeInTheDocument();
+    expect(screen.queryByText(/^via /)).not.toBeInTheDocument();
+  });
+
   it("renders no Reviews section when reviews are empty", async () => {
     mockApi.mockImplementation(async (path: string) => {
       if (path === "/films/550?type=movie") {
