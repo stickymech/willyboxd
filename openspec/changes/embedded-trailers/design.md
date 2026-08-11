@@ -27,12 +27,12 @@ Filter strictly so teasers/featurettes/openings don't surface. If none match (or
 **D3 — Shared type owns the trailer shape.**
 `trailer: { key: string; name: string | null } | null` on `FilmDetail`. The client builds the embed URL `https://www.youtube.com/embed/${key}` inline; no new shared URL helper or constant is needed (YAGNI until a second consumer exists).
 
-**D4 — Inline responsive iframe in the hero.**
-Render `aspect-video` wrapper + `<iframe src={...} allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" title={...}>` only when `film.trailer` is non-null. Placed below the hero meta (overview) so it doesn't disturb the existing scorecards/links. Alternative (thumbnail → modal) rejected: more JS/state for a hobby app; the chosen option is the simplest reliable embed.
+**D4 — Inline responsive iframe between the watchlist/diary section and genres.**
+Render `aspect-video` wrapper + `<iframe src={https://www.youtube-nocookie.com/embed/<key>} allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" title={...}>` only when `film.trailer` is non-null. Placed between the watchlist/diary grid and the genres section so the hero backdrop/banner stays unobscured and dead space is reduced. Alternative (thumbnail → modal) rejected: more JS/state for a hobby app. `youtube-nocookie.com` is used over `youtube.com` to cut third-party ad/CORS console noise from YouTube's embed while keeping playback identical.
 
 ## Risks / Trade-offs
 
 - [Some titles have no YouTube trailer (or only teasers/foreign-language videos)] → Trailer is hidden entirely; page unchanged. Videos fetch still cost +1 cached TMDB call per detail load.
 - [Iframe autoplay/click behavior is browser-restricted] → Use user-initiated play (click the native YouTube play button); no autoplay attribute.
-- [Third-party embed network (youtube-nocookie vs youtube)] → Use standard `youtube.com/embed` for simplicity; privacy variant can be swapped later without schema change.
+- [Third-party embed network (youtube-nocookie vs youtube)] → Use `youtube-nocookie.com/embed` (privacy-friendly, fewer ad/CORS console errors); playback is identical.
 - [FilmDetail.tsx is a high-conflict file] → Branch off clean `main`; merge fast; expect to resolve conflicts against other in-flight detail-page PRs.

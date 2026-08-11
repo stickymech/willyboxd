@@ -262,17 +262,6 @@ export function FilmDetail() {
               {film.overview && (
                 <p className="text-text-muted mt-4 max-w-2xl">{film.overview}</p>
               )}
-              {film.trailer && (
-                <div className="mt-4 max-w-2xl aspect-video">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${film.trailer.key}`}
-                    title={film.trailer.name ?? "Trailer"}
-                    className="w-full h-full rounded-lg ring-1 ring-white/10"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -361,6 +350,18 @@ export function FilmDetail() {
             )}
           </div>
         </div>
+
+        {film.trailer && (
+          <div className="mt-6 max-w-3xl aspect-video">
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${film.trailer.key}`}
+              title={film.trailer.name ?? "Trailer"}
+              className="w-full h-full rounded-lg ring-1 ring-white/10"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        )}
 
         {film.genres.length > 0 && (
           <div className="mt-8">

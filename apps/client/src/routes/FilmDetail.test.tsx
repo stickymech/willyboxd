@@ -370,7 +370,7 @@ describe("FilmDetail reviews", () => {
     expect(await screen.findByText("Fight Club")).toBeInTheDocument();
     const iframe = screen.getByTitle("Official Trailer");
     expect(iframe.tagName).toBe("IFRAME");
-    expect(iframe).toHaveAttribute("src", "https://www.youtube.com/embed/abc123");
+    expect(iframe).toHaveAttribute("src", "https://www.youtube-nocookie.com/embed/abc123");
     expect(iframe).toHaveAttribute("allowFullScreen");
   });
 

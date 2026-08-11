@@ -21,12 +21,12 @@ The `GET /api/films/:id?type=movie|tv` endpoint SHALL return a `trailer` field o
 
 ### Requirement: Detail page embeds the trailer when present
 
-The film/TV detail page SHALL render an embedded YouTube player for the trailer when the film detail response includes a non-null `trailer`. The player SHALL load `https://www.youtube.com/embed/<key>` and SHALL NOT be rendered when `trailer` is `null`.
+The film/TV detail page SHALL render an embedded YouTube player for the trailer when the film detail response includes a non-null `trailer`. The player SHALL load `https://www.youtube-nocookie.com/embed/<key>` and SHALL NOT be rendered when `trailer` is `null`. The player SHALL be positioned between the watchlist/diary section and the genres section so the hero backdrop remains unobscured.
 
 #### Scenario: Trailer present
 
 - **WHEN** the film detail response has `trailer: { key: "abc123", ... }`
-- **THEN** the detail page renders an iframe whose `src` is `https://www.youtube.com/embed/abc123`
+- **THEN** the detail page renders an iframe whose `src` is `https://www.youtube-nocookie.com/embed/abc123`
 
 #### Scenario: Trailer absent
 

@@ -42,7 +42,7 @@ grep -q 'v.site === "YouTube" && v.type === "Trailer"' "$TMDB_SERVICE" && check 
 # Client renders an embed only when trailer is present.
 FILM_DETAIL="$ROOT/apps/client/src/routes/FilmDetail.tsx"
 grep -q "film.trailer && (" "$FILM_DETAIL" && check ok "trailer embed guarded by film.trailer (hidden when null)" || check no "trailer embed guarded by film.trailer (hidden when null)"
-grep -q "youtube.com/embed/" "$FILM_DETAIL" && check ok "embed src is https://www.youtube.com/embed/<key>" || check no "embed src is https://www.youtube.com/embed/<key>"
+grep -q "youtube-nocookie.com/embed/" "$FILM_DETAIL" && check ok "embed src is https://www.youtube-nocookie.com/embed/<key>" || check no "embed src is https://www.youtube-nocookie.com/embed/<key>"
 grep -q "<iframe" "$FILM_DETAIL" && check ok "trailer rendered as an iframe" || check no "trailer rendered as an iframe"
 
 # Unit tests for server service, route, and client rendering exist.
@@ -74,9 +74,11 @@ echo "  Start:  npm run dev   (client http://localhost:5173, server /api)."
 echo
 echo "  [A] Movie with a trailer (e.g. Fight Club)"
 echo "      - Navigate to the movie detail page (search 'Fight Club', or use a known id)."
-echo "      - The hero shows an embedded YouTube player below the overview."
+echo "      - A video player appears BETWEEN the Watchlist/Diary grid and the Genres section."
+echo "      - The hero backdrop banner is NOT obscured by the player."
 echo "      - The player is click-to-play (no autoplay), has a title attribute, and fills the width (16:9)."
 echo "      - Pressing play loads and plays the official trailer."
+echo "      - The browser console shows NO cross-origin ad/redirect errors from the embed (youtube-nocookie)."
 echo
 echo "  [B] TV title with a trailer (e.g. Breaking Bad)"
 echo "      - Open a TV series detail page; the trailer embeds the same way (type=tv)."
@@ -88,6 +90,7 @@ echo
 echo "  [D] Regression"
 echo "      - Detail page still loads when trailers are absent and shows no console errors."
 echo "      - Existing hero elements (ratings, scorecards, View on IMDb/TMDB links) unchanged."
+echo "      - The Watchlist/Diary grid and Genres section still render correctly around the player."
 echo "      - If the videos fetch fails (network), the page still loads without the player."
 
 echo
