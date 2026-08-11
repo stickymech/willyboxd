@@ -18,6 +18,7 @@ export type Genre = {
 };
 
 export type FilmDetail = MediaItem & {
+  vote_count: number;
   runtime: number | null;
   budget: number | null;
   revenue: number | null;

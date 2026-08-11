@@ -125,6 +125,7 @@ export interface TmdbMovieDetail {
   release_date: string;
   runtime: number | null;
   vote_average: number;
+  vote_count: number;
   genres: TmdbGenre[];
   budget: number;
   revenue: number;
@@ -140,6 +141,7 @@ export interface TmdbTvDetail {
   backdrop_path: string | null;
   first_air_date: string;
   vote_average: number;
+  vote_count: number;
   genres: TmdbGenre[];
   number_of_seasons: number;
   number_of_episodes: number;
@@ -327,6 +329,7 @@ export const tmdbService = {
       first_air_date: isMovie ? null : tvDetail.first_air_date,
       original_language: detail.original_language || null,
       vote_average: detail.vote_average,
+      vote_count: detail.vote_count ?? 0,
       genre_ids: detail.genres.map((g) => g.id),
       runtime: isMovie ? movieDetail.runtime : null,
       budget: isMovie ? movieDetail.budget : null,

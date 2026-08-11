@@ -28,6 +28,7 @@ const baseFilm: FilmDetailType = {
   first_air_date: null,
   original_language: "en",
   vote_average: 8.4,
+  vote_count: 1000,
   genre_ids: [],
   runtime: 139,
   budget: null,
@@ -205,7 +206,6 @@ describe("FilmDetail reviews", () => {
     expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
     expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
   });
-
   it("renders the hero score with Stars on the 0.5–5 scale", async () => {
     mockApi.mockImplementation(async (path: string) => {
       if (path === "/films/550?type=movie") {
@@ -219,6 +219,20 @@ describe("FilmDetail reviews", () => {
     expect(await screen.findByText("Fight Club")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /4\.2 out of 5 stars/i })).toBeInTheDocument();
     expect(screen.queryByText(/\/ 10/i)).not.toBeInTheDocument();
+  });
+
+  it("renders no hero Stars when the title has no votes", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return { film: { ...baseFilm, vote_count: 0, reviews: [] } };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Fight Club")).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: /out of 5 stars/i })).not.toBeInTheDocument();
   });
 
   it("renders a labeled IMDb line when imdb_rating is present", async () => {

@@ -45,6 +45,28 @@ grep -q "film.trailer && (" "$FILM_DETAIL" && check ok "trailer embed guarded by
 grep -q "youtube-nocookie.com/embed/" "$FILM_DETAIL" && check ok "embed src is https://www.youtube-nocookie.com/embed/<key>" || check no "embed src is https://www.youtube-nocookie.com/embed/<key>"
 grep -q "<iframe" "$FILM_DETAIL" && check ok "trailer rendered as an iframe" || check no "trailer rendered as an iframe"
 
+# Trailer sits inside the Watchlist column of the watchlist/diary grid (same row as diary).
+if grep -q "Watchlist" "$FILM_DETAIL" && grep -q "film.trailer && (" "$FILM_DETAIL"; then
+  WATCHLIST_LINE=$(grep -n "Watchlist" "$FILM_DETAIL" | head -1 | cut -d: -f1)
+  TRAILER_LINE=$(grep -n "film.trailer && (" "$FILM_DETAIL" | head -1 | cut -d: -f1)
+  GENRES_LINE=$(grep -n "film.genres.length > 0 && (" "$FILM_DETAIL" | head -1 | cut -d: -f1)
+  if [ -n "$WATCHLIST_LINE" ] && [ -n "$TRAILER_LINE" ] && [ -n "$GENRES_LINE" ] && [ "$TRAILER_LINE" -gt "$WATCHLIST_LINE" ] && [ "$TRAILER_LINE" -lt "$GENRES_LINE" ]; then
+    check ok "trailer embed lives between the Watchlist heading and the Genres section (inside the grid)"
+  else
+    check no "trailer embed lives between the Watchlist heading and the Genres section (inside the grid)"
+  fi
+else
+  check no "trailer embed lives between the Watchlist heading and the Genres section (inside the grid)"
+fi
+
+# FilmDetail carries vote_count and hides the 0-star hero row when no votes exist.
+if grep -q "vote_count" "$ROOT/packages/shared/src/types.ts"; then
+  check ok "FilmDetail has vote_count in shared types"
+else
+  check no "FilmDetail has vote_count in shared types"
+fi
+grep -q "vote_count > 0" "$FILM_DETAIL" && check ok "hero Stars hidden when vote_count is 0" || check no "hero Stars hidden when vote_count is 0"
+
 # Unit tests for server service, route, and client rendering exist.
 if grep -q "maps the first YouTube trailer" "$ROOT/apps/server/src/services/tmdb.test.ts" &&
    grep -q "resolves trailer as null when the videos call fails" "$ROOT/apps/server/src/services/tmdb.test.ts"; then
@@ -54,6 +76,8 @@ else
 fi
 grep -q "returns trailer when present" "$ROOT/apps/server/src/routes/tmdb.test.ts" && check ok "route test covers trailer passthrough" || check no "route test covers trailer passthrough"
 grep -q "renders a YouTube embed when a trailer is present" "$ROOT/apps/client/src/routes/FilmDetail.test.tsx" && check ok "client test covers trailer embed render" || check no "client test covers trailer embed render"
+grep -q "maps vote_count from the detail response" "$ROOT/apps/server/src/services/tmdb.test.ts" && check ok "server test covers vote_count mapping" || check no "server test covers vote_count mapping"
+grep -q "renders no hero Stars when the title has no votes" "$ROOT/apps/client/src/routes/FilmDetail.test.tsx" && check ok "client test covers hidden stars for vote_count 0" || check no "client test covers hidden stars for vote_count 0"
 
 # Run the relevant test suites.
 if (cd "$ROOT/apps/server" && npx vitest run src/services/tmdb.test.ts src/routes/tmdb.test.ts --silent >/dev/null 2>&1); then
@@ -74,7 +98,8 @@ echo "  Start:  npm run dev   (client http://localhost:5173, server /api)."
 echo
 echo "  [A] Movie with a trailer (e.g. Fight Club)"
 echo "      - Navigate to the movie detail page (search 'Fight Club', or use a known id)."
-echo "      - A video player appears BETWEEN the Watchlist/Diary grid and the Genres section."
+echo "      - A video player appears in the LEFT column of the Watchlist/Diary grid, BELOW the"
+echo "        'Add to Watchlist' button — same row as the diary form, filling the dead space."
 echo "      - The hero backdrop banner is NOT obscured by the player."
 echo "      - The player is click-to-play (no autoplay), has a title attribute, and fills the width (16:9)."
 echo "      - Pressing play loads and plays the official trailer."
@@ -87,10 +112,15 @@ echo "  [C] Title with no trailer"
 echo "      - Find/QA a title with no YouTube trailer (many older or niche titles)."
 echo "      - No video player is rendered anywhere on the page; layout is unchanged."
 echo
-echo "  [D] Regression"
+echo "  [D] Low-vote title (vote_count 0, e.g. 'cocoon - One Summer of Girlhood')"
+echo "      - Open the detail page for a title with zero TMDB votes."
+echo "      - NO empty 0-star row is shown in the hero (the old misleading '0 stars')."
+echo "      - IMDb/RT/Metacritic scorecards still render when present; View on TMDB/IMDb links unchanged."
+echo
+echo "  [E] Regression"
 echo "      - Detail page still loads when trailers are absent and shows no console errors."
 echo "      - Existing hero elements (ratings, scorecards, View on IMDb/TMDB links) unchanged."
-echo "      - The Watchlist/Diary grid and Genres section still render correctly around the player."
+echo "      - The Watchlist/Diary grid still renders correctly around the player."
 echo "      - If the videos fetch fails (network), the page still loads without the player."
 
 echo

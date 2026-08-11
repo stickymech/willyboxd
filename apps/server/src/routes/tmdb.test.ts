@@ -57,6 +57,7 @@ const baseDetail: FilmDetail = {
   first_air_date: null,
   original_language: "en",
   vote_average: 8.4,
+  vote_count: 1000,
   genre_ids: [],
   runtime: 139,
   budget: null,

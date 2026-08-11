@@ -486,6 +486,34 @@ describe("TMDB Service", () => {
     expect(detail.trailer).toBeNull();
   });
 
+  test("getDetail maps vote_count from the detail response", async () => {
+    fetchMock.mockImplementation(async (url: string) => {
+      const path = url.split("?")[0];
+      if (path.endsWith("/reviews")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ results: [] }) };
+      }
+      if (path.endsWith("/credits")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 9, cast: [], crew: [] }) };
+      }
+      if (path.endsWith("/images")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 9, backdrops: [], posters: [] }) };
+      }
+      if (path.endsWith("/videos")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ results: [] }) };
+      }
+      return {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        json: async () => ({ id: 9, title: "Film", overview: "", poster_path: null, backdrop_path: null, genres: [], vote_average: 7.5, vote_count: 42 }),
+      };
+    });
+
+    const detail = await tmdbService.getDetail(9, "movie");
+
+    expect(detail.vote_count).toBe(42);
+  });
+
   test("getDetail resolves trailer as null when the videos call fails", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     fetchMock.mockImplementation(async (url: string) => {

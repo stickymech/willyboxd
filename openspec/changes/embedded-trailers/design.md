@@ -27,8 +27,8 @@ Filter strictly so teasers/featurettes/openings don't surface. If none match (or
 **D3 — Shared type owns the trailer shape.**
 `trailer: { key: string; name: string | null } | null` on `FilmDetail`. The client builds the embed URL `https://www.youtube.com/embed/${key}` inline; no new shared URL helper or constant is needed (YAGNI until a second consumer exists).
 
-**D4 — Inline responsive iframe between the watchlist/diary section and genres.**
-Render `aspect-video` wrapper + `<iframe src={https://www.youtube-nocookie.com/embed/<key>} allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" title={...}>` only when `film.trailer` is non-null. Placed between the watchlist/diary grid and the genres section so the hero backdrop/banner stays unobscured and dead space is reduced. Alternative (thumbnail → modal) rejected: more JS/state for a hobby app. `youtube-nocookie.com` is used over `youtube.com` to cut third-party ad/CORS console noise from YouTube's embed while keeping playback identical.
+**D4 — Inline responsive iframe inside the Watchlist column of the watchlist/diary grid.**
+Render `aspect-video` wrapper + `<iframe src={https://www.youtube-nocookie.com/embed/<key>} allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" title={...}>` only when `film.trailer` is non-null. Placed below the watchlist action within the left column of the watchlist/diary grid so it shares the row with the diary form, fills the dead space between the watchlist button and genres, and keeps the hero backdrop/banner unobscured. Alternative (thumbnail → modal) rejected: more JS/state for a hobby app. `youtube-nocookie.com` is used over `youtube.com` to cut third-party ad/CORS console noise from YouTube's embed while keeping playback identical.
 
 ## Risks / Trade-offs
 

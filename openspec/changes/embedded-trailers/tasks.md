@@ -12,8 +12,14 @@
 
 ## 3. Client: trailer embed
 
-- [x] 3.1 Render `https://www.youtube.com/embed/<key>` iframe in the `FilmDetail` hero when `film.trailer` is non-null
+- [x] 3.1 Render `https://www.youtube-nocookie.com/embed/<key>` iframe in the `FilmDetail` Watchlist column when `film.trailer` is non-null
 - [x] 3.2 Client tests in `apps/client/src/routes/FilmDetail.test.tsx`: renders iframe when present, no player when null
+
+## 3b. QA fixes
+
+- [x] 3b.1 Reposition trailer into the Watchlist column of the watchlist/diary grid (same row as diary form)
+- [x] 3b.2 Plumb `vote_count` through `FilmDetail`; hide hero `Stars` when `vote_count === 0`
+- [x] 3b.3 Add tests: server `vote_count` mapping, client hidden-stars for `vote_count: 0`
 
 ## 4. Verification
 
