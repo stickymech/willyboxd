@@ -262,6 +262,17 @@ export function FilmDetail() {
               {film.overview && (
                 <p className="text-text-muted mt-4 max-w-2xl">{film.overview}</p>
               )}
+              {film.trailer && (
+                <div className="mt-4 max-w-2xl aspect-video">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${film.trailer.key}`}
+                    title={film.trailer.name ?? "Trailer"}
+                    className="w-full h-full rounded-lg ring-1 ring-white/10"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

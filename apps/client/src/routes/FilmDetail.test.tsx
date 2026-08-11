@@ -43,6 +43,7 @@ const baseFilm: FilmDetailType = {
   imdb_rating: null,
   rt_rating: null,
   metacritic_rating: null,
+  trailer: null,
   reviews: [],
 };
 
@@ -354,6 +355,37 @@ describe("FilmDetail reviews", () => {
       "href",
       "https://www.themoviedb.org/tv/123",
     );
+  });
+
+  it("renders a YouTube embed when a trailer is present", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return { film: { ...baseFilm, trailer: { key: "abc123", name: "Official Trailer" }, reviews: [] } };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Fight Club")).toBeInTheDocument();
+    const iframe = screen.getByTitle("Official Trailer");
+    expect(iframe.tagName).toBe("IFRAME");
+    expect(iframe).toHaveAttribute("src", "https://www.youtube.com/embed/abc123");
+    expect(iframe).toHaveAttribute("allowFullScreen");
+  });
+
+  it("renders no video embed when trailer is null", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return { film: { ...baseFilm, trailer: null, reviews: [] } };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Fight Club")).toBeInTheDocument();
+    expect(screen.queryByTitle(/trailer/i)).not.toBeInTheDocument();
   });
 
   it("shows no star rating when a review has no rating", async () => {

@@ -50,6 +50,7 @@ const filmDetail: FilmDetail = {
   imdb_rating: null,
   rt_rating: null,
   metacritic_rating: null,
+  trailer: null,
   reviews: [],
 };
 

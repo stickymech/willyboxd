@@ -186,6 +186,17 @@ export interface TmdbExternalIds {
   imdb_id: string | null;
 }
 
+export interface TmdbVideo {
+  key: string;
+  name: string;
+  site: string;
+  type: string;
+}
+
+export interface TmdbVideos {
+  results: TmdbVideo[];
+}
+
 export interface TmdbReview {
   id: string;
   author: string;
@@ -282,16 +293,24 @@ export const tmdbService = {
       },
     );
 
-    const [detail, credits, images, reviews, externalIds] = await Promise.all([
+    const videosPromise = fetchFromApi<TmdbVideos>(`${type}/${id}/videos`).catch((e: unknown) => {
+      console.warn(`Videos unavailable for ${type}/${id}`, e);
+      return { results: [] as TmdbVideo[] };
+    });
+
+    const [detail, credits, images, reviews, externalIds, videos] = await Promise.all([
       fetchFromApi<TmdbMovieDetail | TmdbTvDetail>(`${type}/${id}`),
       fetchFromApi<TmdbCredits>(`${type}/${id}/credits`),
       fetchFromApi<TmdbImages>(`${type}/${id}/images`),
       reviewsPromise,
       externalIdsPromise,
+      videosPromise,
     ]);
 
     const imdbId = externalIds.imdb_id ?? null;
     const ratings = imdbId ? await omdbService.getRatings(imdbId) : { imdb: null, rt: null, metacritic: null };
+    const trailer = videos.results.find((v) => v.site === "YouTube" && v.type === "Trailer");
+    const trailerValue = trailer ? { key: trailer.key, name: trailer.name } : null;
 
     const isMovie = type === "movie";
     const movieDetail = detail as TmdbMovieDetail;
@@ -344,6 +363,7 @@ export const tmdbService = {
       imdb_rating: ratings.imdb,
       rt_rating: ratings.rt,
       metacritic_rating: ratings.metacritic,
+      trailer: trailerValue,
       reviews: reviews.results.slice(0, 5).map((r) => ({
         id: r.id,
         author: r.author,
