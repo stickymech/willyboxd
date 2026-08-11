@@ -60,6 +60,10 @@ export function toStarRating(value: number): number {
   return value / 2;
 }
 
+export function toHundredStarRating(value: number): number {
+  return value / 20;
+}
+
 const REVIEW_SOURCE_NAMES: Record<string, string> = {
   "themoviedb.org": "TMDB",
   "imdb.com": "IMDb",

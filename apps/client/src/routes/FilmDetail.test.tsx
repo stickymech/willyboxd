@@ -41,6 +41,8 @@ const baseFilm: FilmDetailType = {
   images: { backdrops: [], posters: [] },
   imdb_id: null,
   imdb_rating: null,
+  rt_rating: null,
+  metacritic_rating: null,
   reviews: [],
 };
 
@@ -244,6 +246,56 @@ describe("FilmDetail reviews", () => {
 
     expect(await screen.findByText("Fight Club")).toBeInTheDocument();
     expect(screen.queryByText("IMDb")).not.toBeInTheDocument();
+  });
+
+  it("renders Rotten Tomatoes and Metacritic scorecards when present", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return {
+          film: { ...baseFilm, imdb_id: "tt0137523", imdb_rating: 8.8, rt_rating: 79, metacritic_rating: 66, reviews: [] },
+        };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Rotten Tomatoes")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /3\.95 out of 5 stars/i })).toBeInTheDocument();
+    expect(screen.getByText("Metacritic")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /3\.3 out of 5 stars/i })).toBeInTheDocument();
+  });
+
+  it("renders no critic scorecards when ratings are null", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return { film: { ...baseFilm, imdb_id: null, imdb_rating: null, rt_rating: null, metacritic_rating: null, reviews: [] } };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Fight Club")).toBeInTheDocument();
+    expect(screen.queryByText("Rotten Tomatoes")).not.toBeInTheDocument();
+    expect(screen.queryByText("Metacritic")).not.toBeInTheDocument();
+  });
+
+  it("renders a Metacritic scorecard when only it is present", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return {
+          film: { ...baseFilm, imdb_id: "tt0137523", imdb_rating: 8.8, rt_rating: null, metacritic_rating: 80, reviews: [] },
+        };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("Metacritic")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /^4 out of 5 stars$/i })).toBeInTheDocument();
+    expect(screen.queryByText("Rotten Tomatoes")).not.toBeInTheDocument();
   });
 
   it("renders View on IMDb and View on TMDB links with correct hrefs", async () => {

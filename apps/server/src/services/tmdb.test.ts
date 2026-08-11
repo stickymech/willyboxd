@@ -306,14 +306,27 @@ describe("TMDB Service", () => {
     expect(detail.reviews).toEqual([]);
   });
 
-  test("getDetail maps imdb_id and imdb_rating from external_ids + OMDB", async () => {
+  test("getDetail maps imdb_id, imdb_rating, rt_rating, and metacritic_rating from external_ids + OMDB", async () => {
     const originalKey = process.env.OMDB_API_KEY;
     process.env.OMDB_API_KEY = "test-omdb-key";
 
     fetchMock.mockImplementation(async (url: string) => {
       const path = url.split("?")[0];
       if (url.startsWith("https://www.omdbapi.com/")) {
-        return { ok: true, status: 200, statusText: "OK", json: async () => ({ imdbRating: "8.8", Response: "True" }) };
+        return {
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          json: async () => ({
+            imdbRating: "8.8",
+            Ratings: [
+              { Source: "Internet Movie Database", Value: "8.8/10" },
+              { Source: "Rotten Tomatoes", Value: "79%" },
+              { Source: "Metacritic", Value: "66/100" },
+            ],
+            Response: "True",
+          }),
+        };
       }
       if (path.endsWith("/external_ids")) {
         return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 4, imdb_id: "tt0137523" }) };
@@ -342,6 +355,8 @@ describe("TMDB Service", () => {
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/movie/4/external_ids"));
     expect(detail.imdb_id).toBe("tt0137523");
     expect(detail.imdb_rating).toBe(8.8);
+    expect(detail.rt_rating).toBe(79);
+    expect(detail.metacritic_rating).toBe(66);
   });
 
   test("getDetail resolves imdb fields as null when external_ids fails", async () => {
@@ -372,6 +387,8 @@ describe("TMDB Service", () => {
 
     expect(detail.imdb_id).toBeNull();
     expect(detail.imdb_rating).toBeNull();
+    expect(detail.rt_rating).toBeNull();
+    expect(detail.metacritic_rating).toBeNull();
     expect(warnSpy).toHaveBeenCalled();
     warnSpy.mockRestore();
   });

@@ -9,6 +9,7 @@ import {
   getReviewSourceLabel,
   RATING_OPTIONS,
   toStarRating,
+  toHundredStarRating,
 } from "@willyboxd/shared";
 
 describe("Shared Utilities", () => {
@@ -24,6 +25,13 @@ describe("Shared Utilities", () => {
     expect(toStarRating(10)).toBe(5);
     expect(toStarRating(0)).toBe(0);
     expect(toStarRating(8.8)).toBe(4.4);
+  });
+
+  test("toHundredStarRating normalizes a 0–100 score to the 0.5–5 scale", () => {
+    expect(toHundredStarRating(79)).toBe(3.95);
+    expect(toHundredStarRating(66)).toBe(3.3);
+    expect(toHundredStarRating(100)).toBe(5);
+    expect(toHundredStarRating(0)).toBe(0);
   });
 
   test("formatMinutes converts correctly", () => {

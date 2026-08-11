@@ -49,16 +49,42 @@ function waitForRateLimit(): Promise<void> {
   });
 }
 
+export interface OmdbRatings {
+  imdb: number | null;
+  rt: number | null;
+  metacritic: number | null;
+}
+
+interface OmdbRatingEntry {
+  Source?: string;
+  Value?: string;
+}
+
 interface OmdbResponse {
-  imdbRating: string;
+  imdbRating?: string;
+  Ratings?: OmdbRatingEntry[];
   Response?: string;
 }
 
+function parsePercent(value: string): number | null {
+  const match = /^(\d+(?:\.\d+)?)%/.exec(value.trim());
+  if (!match) return null;
+  const parsed = parseFloat(match[1]);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseOutOfHundred(value: string): number | null {
+  const match = /^(\d+(?:\.\d+)?)\/100/.exec(value.trim());
+  if (!match) return null;
+  const parsed = parseFloat(match[1]);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 export const omdbService = {
-  async getRating(imdbId: string): Promise<number | null> {
+  async getRatings(imdbId: string): Promise<OmdbRatings> {
     const apiKey = getApiKey();
     if (!imdbId || !apiKey) {
-      return null;
+      return { imdb: null, rt: null, metacritic: null };
     }
 
     const cacheKey = `i=${imdbId}`;
@@ -66,7 +92,7 @@ export const omdbService = {
     const now = Date.now();
 
     if (cached && now - cached.timestamp < TMDB_CACHE_TTL_DAYS * 24 * 60 * 60 * 1000) {
-      return cached.data as number | null;
+      return cached.data as OmdbRatings;
     }
 
     await waitForRateLimit();
@@ -77,18 +103,27 @@ export const omdbService = {
 
       if (!response.ok) {
         console.warn(`OMDB API error: ${response.status} ${response.statusText}`);
-        return null;
+        return { imdb: null, rt: null, metacritic: null };
       }
 
       const data = (await response.json()) as OmdbResponse;
-      const rating = parseFloat(data.imdbRating);
-      const result = Number.isFinite(rating) ? rating : null;
+      const imdbRaw = parseFloat(data.imdbRating ?? "N/A");
+      const imdb = Number.isFinite(imdbRaw) ? imdbRaw : null;
+
+      const rt = data.Ratings?.find((entry) => entry.Source === "Rotten Tomatoes")?.Value;
+      const metacritic = data.Ratings?.find((entry) => entry.Source === "Metacritic")?.Value;
+
+      const result: OmdbRatings = {
+        imdb,
+        rt: rt ? parsePercent(rt) : null,
+        metacritic: metacritic ? parseOutOfHundred(metacritic) : null,
+      };
 
       cache.set(cacheKey, { data: result, timestamp: now });
       return result;
     } catch (e) {
       console.warn(`OMDB lookup failed for ${imdbId}`, e);
-      return null;
+      return { imdb: null, rt: null, metacritic: null };
     }
   },
 };
