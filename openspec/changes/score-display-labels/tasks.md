@@ -17,7 +17,7 @@
 ## 3. Docs & QA
 
 - [x] 3.1 Update `scripts/qa-critic-scorecards.sh` expectations for half-star labels
-- [ ] 3.2 Add `scripts/qa-score-display-labels.sh` (static checks + targeted vitest + manual browser steps)
+- [x] 3.2 Add `scripts/qa-score-display-labels.sh` (static checks + targeted vitest + manual browser steps)
 
 ## 4. Verification & wrap-up
 
