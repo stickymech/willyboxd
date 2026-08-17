@@ -1,6 +1,6 @@
 import type { MediaItem } from "@willyboxd/shared";
 import { Link } from "react-router-dom";
-import { getPosterUrl } from "@willyboxd/shared";
+import { getPosterUrl, toStarRating, formatScore } from "@willyboxd/shared";
 
 interface FilmCardProps {
   film: MediaItem;
@@ -26,7 +26,7 @@ export function FilmCard({ film }: FilmCardProps) {
         )}
         {film.vote_average > 0 && (
           <div className="absolute top-1 right-1 bg-surface/80 backdrop-blur rounded-full px-1.5 py-0.5 text-xs text-accent">
-            ★ {film.vote_average.toFixed(1)}
+            ★ {formatScore(toStarRating(film.vote_average))}
           </div>
         )}
       </div>

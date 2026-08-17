@@ -217,7 +217,8 @@ describe("FilmDetail reviews", () => {
     renderFilmDetail();
 
     expect(await screen.findByText("Fight Club")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /4\.2 out of 5 stars/i })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /^4 out of 5 stars$/i })).toBeInTheDocument();
+    expect(screen.getByText("4/5")).toBeInTheDocument();
     expect(screen.queryByText(/\/ 10/i)).not.toBeInTheDocument();
   });
 
@@ -246,7 +247,8 @@ describe("FilmDetail reviews", () => {
     renderFilmDetail();
 
     expect(await screen.findByText("IMDb")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /4\.4 out of 5 stars/i })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /4\.5 out of 5 stars/i })).toBeInTheDocument();
+    expect(screen.getByText("4.5/5")).toBeInTheDocument();
   });
 
   it("renders no IMDb line when imdb_rating is null", async () => {
@@ -276,9 +278,11 @@ describe("FilmDetail reviews", () => {
     renderFilmDetail();
 
     expect(await screen.findByText("Rotten Tomatoes")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /3\.95 out of 5 stars/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("img", { name: /^4 out of 5 stars$/i }).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByRole("img", { name: /^3\.5 out of 5 stars$/i })).toBeInTheDocument();
     expect(screen.getByText("Metacritic")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /3\.3 out of 5 stars/i })).toBeInTheDocument();
+    expect(screen.getAllByText("4/5").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText("3.5/5")).toBeInTheDocument();
   });
 
   it("renders no critic scorecards when ratings are null", async () => {
@@ -296,11 +300,40 @@ describe("FilmDetail reviews", () => {
     expect(screen.queryByText("Metacritic")).not.toBeInTheDocument();
   });
 
+  it("renders a 'No ratings available yet' note when no score data exists", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return {
+          film: { ...baseFilm, vote_count: 0, vote_average: 0, imdb_id: null, imdb_rating: null, rt_rating: null, metacritic_rating: null, reviews: [] },
+        };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("No ratings available yet.")).toBeInTheDocument();
+  });
+
+  it("does not render a 'No ratings available yet' note when scores exist", async () => {
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/550?type=movie") {
+        return { film: { ...baseFilm, imdb_id: "tt0137523", imdb_rating: 8.8, reviews: [] } };
+      }
+      return { entries: [] };
+    });
+
+    renderFilmDetail();
+
+    expect(await screen.findByText("IMDb")).toBeInTheDocument();
+    expect(screen.queryByText("No ratings available yet.")).not.toBeInTheDocument();
+  });
+
   it("renders a Metacritic scorecard when only it is present", async () => {
     mockApi.mockImplementation(async (path: string) => {
       if (path === "/films/550?type=movie") {
         return {
-          film: { ...baseFilm, imdb_id: "tt0137523", imdb_rating: 8.8, rt_rating: null, metacritic_rating: 80, reviews: [] },
+          film: { ...baseFilm, imdb_id: "tt0137523", imdb_rating: 8.8, rt_rating: null, metacritic_rating: 100, reviews: [] },
         };
       }
       return { entries: [] };
@@ -309,7 +342,8 @@ describe("FilmDetail reviews", () => {
     renderFilmDetail();
 
     expect(await screen.findByText("Metacritic")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /^4 out of 5 stars$/i })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /^5 out of 5 stars$/i })).toBeInTheDocument();
+    expect(screen.getByText("5/5")).toBeInTheDocument();
     expect(screen.queryByText("Rotten Tomatoes")).not.toBeInTheDocument();
   });
 
