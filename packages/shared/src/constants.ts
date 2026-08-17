@@ -57,11 +57,16 @@ export function getTmdbUrl(id: number, type: "movie" | "tv"): string {
 }
 
 export function toStarRating(value: number): number {
-  return value / 2;
+  return Math.round(value) / 2;
 }
 
 export function toHundredStarRating(value: number): number {
-  return value / 20;
+  return Math.round(value / 10) / 2;
+}
+
+export function formatScore(value: number): string {
+  const half = Math.round(value * 2) / 2;
+  return `${Number.isInteger(half) ? half : half.toFixed(1)}/5`;
 }
 
 const REVIEW_SOURCE_NAMES: Record<string, string> = {

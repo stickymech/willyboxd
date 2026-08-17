@@ -10,6 +10,7 @@ import {
   RATING_OPTIONS,
   toStarRating,
   toHundredStarRating,
+  formatScore,
 } from "@willyboxd/shared";
 
 describe("Shared Utilities", () => {
@@ -20,18 +21,27 @@ describe("Shared Utilities", () => {
     expect(ratingLabel(0)).toBe("No rating");
   });
 
-  test("toStarRating normalizes a 0–10 score to the 0.5–5 scale", () => {
-    expect(toStarRating(8.4)).toBe(4.2);
+  test("toStarRating normalizes a 0–10 score to the nearest half-star on the 0.5–5 scale", () => {
+    expect(toStarRating(8.4)).toBe(4);
+    expect(toStarRating(8.8)).toBe(4.5);
+    expect(toStarRating(8.2)).toBe(4);
     expect(toStarRating(10)).toBe(5);
     expect(toStarRating(0)).toBe(0);
-    expect(toStarRating(8.8)).toBe(4.4);
   });
 
-  test("toHundredStarRating normalizes a 0–100 score to the 0.5–5 scale", () => {
-    expect(toHundredStarRating(79)).toBe(3.95);
-    expect(toHundredStarRating(66)).toBe(3.3);
+  test("toHundredStarRating normalizes a 0–100 score to the nearest half-star on the 0.5–5 scale", () => {
+    expect(toHundredStarRating(79)).toBe(4);
+    expect(toHundredStarRating(66)).toBe(3.5);
     expect(toHundredStarRating(100)).toBe(5);
     expect(toHundredStarRating(0)).toBe(0);
+  });
+
+  test("formatScore renders a 0–5 score as a half-star increment label", () => {
+    expect(formatScore(4)).toBe("4/5");
+    expect(formatScore(4.5)).toBe("4.5/5");
+    expect(formatScore(3.5)).toBe("3.5/5");
+    expect(formatScore(5)).toBe("5/5");
+    expect(formatScore(0)).toBe("0/5");
   });
 
   test("formatMinutes converts correctly", () => {
