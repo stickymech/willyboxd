@@ -7,7 +7,7 @@ import { Header } from "../components/Header";
 import { RatingSelect } from "../components/RatingSelect";
 import { Stars } from "../components/Stars";
 import { useAuth } from "../lib/auth";
-import { getPosterUrl, getBackdropUrl, getProfileUrl, toStarRating, toHundredStarRating, getImdbUrl, getTmdbUrl, getReviewSourceLabel } from "@willyboxd/shared";
+import { getPosterUrl, getBackdropUrl, getProfileUrl, toStarRating, toHundredStarRating, formatScore, getImdbUrl, getTmdbUrl, getReviewSourceLabel } from "@willyboxd/shared";
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -191,6 +191,8 @@ export function FilmDetail() {
   const { film } = response;
   const posterUrl = getPosterUrl(film.poster_path, "large");
   const backdropUrl = getBackdropUrl(film.backdrop_path, "large");
+  const hasAnyScore =
+    film.vote_count > 0 || film.imdb_rating !== null || film.rt_rating !== null || film.metacritic_rating !== null;
 
   return (
     <>
@@ -216,25 +218,36 @@ export function FilmDetail() {
                 {film.release_date?.slice(0, 4)} • {film.type === "movie" ? "Film" : "TV Series"}
               </p>
               <div className="flex items-center gap-2 mt-3">
-                {film.vote_count > 0 && <Stars value={toStarRating(film.vote_average)} />}
+                {film.vote_count > 0 && (
+                  <>
+                    <Stars value={toStarRating(film.vote_average)} />
+                    <span className="text-sm text-text-subtle">{formatScore(toStarRating(film.vote_average))}</span>
+                  </>
+                )}
               </div>
               {film.imdb_rating !== null && (
                 <div className="flex items-center gap-2 mt-1.5">
                   <span className="text-sm text-text-subtle">IMDb</span>
                   <Stars value={toStarRating(film.imdb_rating)} size="sm" />
+                  <span className="text-sm text-text-subtle">{formatScore(toStarRating(film.imdb_rating))}</span>
                 </div>
               )}
               {film.rt_rating !== null && (
                 <div className="flex items-center gap-2 mt-1.5">
                   <span className="text-sm text-text-subtle">Rotten Tomatoes</span>
                   <Stars value={toHundredStarRating(film.rt_rating)} size="sm" />
+                  <span className="text-sm text-text-subtle">{formatScore(toHundredStarRating(film.rt_rating))}</span>
                 </div>
               )}
               {film.metacritic_rating !== null && (
                 <div className="flex items-center gap-2 mt-1.5">
                   <span className="text-sm text-text-subtle">Metacritic</span>
                   <Stars value={toHundredStarRating(film.metacritic_rating)} size="sm" />
+                  <span className="text-sm text-text-subtle">{formatScore(toHundredStarRating(film.metacritic_rating))}</span>
                 </div>
+              )}
+              {!hasAnyScore && (
+                <p className="text-sm text-text-muted mt-1.5">No ratings available yet.</p>
               )}
               <div className="flex flex-wrap items-center gap-3 mt-2">
                 {film.imdb_id && (
