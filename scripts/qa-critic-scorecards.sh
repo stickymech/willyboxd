@@ -31,10 +31,10 @@ if grep -q "export function toHundredStarRating" "$ROOT/packages/shared/src/cons
 else
   check no "toHundredStarRating exported from shared"
 fi
-if grep -q "value / 20" "$ROOT/packages/shared/src/constants.ts"; then
-  check ok "toHundredStarRating divides by 20"
+if grep -q "Math.round(value / 10) / 2" "$ROOT/packages/shared/src/constants.ts"; then
+  check ok "toHundredStarRating normalizes ÷20 rounded to the nearest half-star"
 else
-  check no "toHundredStarRating divides by 20"
+  check no "toHundredStarRating normalizes ÷20 rounded to the nearest half-star"
 fi
 
 # Server: omdbService.getRatings returns { imdb, rt, metacritic }.
@@ -90,10 +90,11 @@ echo "  Start:  npm run dev   (client http://localhost:5173, server /api)."
 echo
 echo "  [A] Title with all three ratings (e.g. Fight Club, id 550)"
 echo "      - Open the film detail page. The hero shows IMDb, Rotten Tomatoes,"
-echo "        and Metacritic scorecards as star rows."
-echo "      - Fight Club expected values: IMDb 8.8 -> 4.4 stars;"
-echo "        RT 79% -> 3.95 stars; Metacritic 66/100 -> 3.3 stars."
-echo "      - Star values are labeled (the <img> alt text reads '3.95 out of 5 stars')."
+  echo "        and Metacritic scorecards as star rows, each with a normalized"
+      echo "        numeric label beside the stars (canonical 0.5–5 scale)."
+      echo "      - Fight Club expected values: IMDb 8.8 -> 4.5/5 (4.5 stars);"
+      echo "        RT 81% -> 4/5 (4 stars); Metacritic 67/100 -> 3.5/5 (3.5 stars)."
+      echo "      - Star values are labeled (the <img> alt text reads '4.5 out of 5 stars')."
 echo
 echo "  [B] A title missing one source"
 echo "      - Find a title where OMDB has no Metacritic rating (or no RT)."
