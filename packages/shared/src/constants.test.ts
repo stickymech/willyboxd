@@ -10,14 +10,27 @@ import {
   RATING_OPTIONS,
   toStarRating,
   toHundredStarRating,
+  toHalfStar,
 } from "@willyboxd/shared";
 
 describe("Shared Utilities", () => {
   test("ratingLabel returns correct star display", () => {
     expect(ratingLabel(0.5)).toBe("½");
+    expect(ratingLabel(1.5)).toBe("★½");
+    expect(ratingLabel(2.5)).toBe("★★½");
     expect(ratingLabel(3)).toBe("★★★");
+    expect(ratingLabel(3.5)).toBe("★★★½");
     expect(ratingLabel(5)).toBe("★★★★★");
     expect(ratingLabel(0)).toBe("No rating");
+  });
+
+  test("toHalfStar rounds to the nearest half star", () => {
+    expect(toHalfStar(4.4)).toBe(4.5);
+    expect(toHalfStar(4.2)).toBe(4);
+    expect(toHalfStar(3.95)).toBe(4);
+    expect(toHalfStar(3.3)).toBe(3.5);
+    expect(toHalfStar(3.85)).toBe(4);
+    expect(toHalfStar(0)).toBe(0);
   });
 
   test("toStarRating normalizes a 0–10 score to the 0.5–5 scale", () => {
