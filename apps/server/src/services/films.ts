@@ -1,5 +1,6 @@
 import { db } from "../db";
 import { tmdbService } from "./tmdb";
+import { omdbService } from "./omdb";
 import { TMDB_CACHE_TTL_DAYS, type FilmDetail, type MediaItem } from "@willyboxd/shared";
 
 export interface FilmRow {
@@ -14,6 +15,10 @@ export interface FilmRow {
   first_air_date: string | null;
   runtime: number | null;
   vote_average: number | null;
+  imdb_id: string | null;
+  imdb_rating: number | null;
+  rt_rating: number | null;
+  metacritic_rating: number | null;
   genres_json: string | null;
   last_updated: string;
 }
@@ -37,6 +42,10 @@ export function rowToMediaItem(row: Partial<FilmRow>): MediaItem {
     original_language: null,
     vote_average: row.vote_average ?? 0,
     genre_ids: genres.map((g) => g.id),
+    imdb_id: row.imdb_id ?? null,
+    imdb_rating: row.imdb_rating ?? null,
+    rt_rating: row.rt_rating ?? null,
+    metacritic_rating: row.metacritic_rating ?? null,
   };
 }
 
@@ -51,9 +60,10 @@ function upsertFilm(detail: FilmDetail): void {
   db.prepare(
     `INSERT INTO films (
        tmdb_id, title, type, poster_path, backdrop_path, overview,
-       release_date, first_air_date, runtime, vote_average, genres_json,
+       release_date, first_air_date, runtime, vote_average, imdb_id,
+       imdb_rating, rt_rating, metacritic_rating, genres_json,
        credits_json, images_json, last_updated
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
      ON CONFLICT(tmdb_id) DO UPDATE SET
        title = excluded.title,
        type = excluded.type,
@@ -64,6 +74,10 @@ function upsertFilm(detail: FilmDetail): void {
        first_air_date = excluded.first_air_date,
        runtime = excluded.runtime,
        vote_average = excluded.vote_average,
+       imdb_id = excluded.imdb_id,
+       imdb_rating = excluded.imdb_rating,
+       rt_rating = excluded.rt_rating,
+       metacritic_rating = excluded.metacritic_rating,
        genres_json = excluded.genres_json,
        credits_json = excluded.credits_json,
        images_json = excluded.images_json,
@@ -79,6 +93,10 @@ function upsertFilm(detail: FilmDetail): void {
     detail.first_air_date,
     detail.runtime,
     detail.vote_average,
+    detail.imdb_id,
+    detail.imdb_rating,
+    detail.rt_rating,
+    detail.metacritic_rating,
     genresJson,
     JSON.stringify(detail.credits),
     JSON.stringify(detail.images),
@@ -99,7 +117,7 @@ export async function syncFilm(tmdbId: number, type: "movie" | "tv"): Promise<Me
   if (existing) {
     const ttlMs = TMDB_CACHE_TTL_DAYS * 24 * 60 * 60 * 1000;
     const lastUpdated = parseDbTimestamp(existing.last_updated);
-    if (Date.now() - lastUpdated < ttlMs) {
+    if (Date.now() - lastUpdated < ttlMs && existing.imdb_rating !== null) {
       return rowToMediaItem(existing);
     }
   }
@@ -107,6 +125,74 @@ export async function syncFilm(tmdbId: number, type: "movie" | "tv"): Promise<Me
   const detail = await tmdbService.getDetail(tmdbId, type);
   upsertFilm(detail);
   return rowToMediaItem(detail);
+}
+
+export function persistFilmDetail(detail: FilmDetail): void {
+  upsertFilm(detail);
+}
+
+export interface RatingsResult {
+  imdb_id: string | null;
+  imdb_rating: number | null;
+  rt_rating: number | null;
+  metacritic_rating: number | null;
+}
+
+export async function enrichRatings(tmdbId: number, type: "movie" | "tv"): Promise<RatingsResult> {
+  const filmRow = db.prepare("SELECT * FROM films WHERE tmdb_id = ?").get(tmdbId) as FilmRow | undefined;
+  if (filmRow && filmRow.imdb_rating !== null) {
+    return {
+      imdb_id: filmRow.imdb_id,
+      imdb_rating: filmRow.imdb_rating,
+      rt_rating: filmRow.rt_rating,
+      metacritic_rating: filmRow.metacritic_rating,
+    };
+  }
+
+  const cached = db
+    .prepare("SELECT * FROM film_ratings WHERE tmdb_id = ? AND type = ?")
+    .get(tmdbId, type) as
+    | { imdb_id: string | null; imdb_rating: number | null; rt_rating: number | null; metacritic_rating: number | null }
+    | undefined;
+  if (cached) {
+    return {
+      imdb_id: cached.imdb_id,
+      imdb_rating: cached.imdb_rating,
+      rt_rating: cached.rt_rating,
+      metacritic_rating: cached.metacritic_rating,
+    };
+  }
+
+  try {
+    const externalIds = await tmdbService.getExternalIds(tmdbId, type);
+    const ratings =
+      externalIds.imdb_id !== null
+        ? await omdbService.getRatings(externalIds.imdb_id)
+        : { imdb: null, rt: null, metacritic: null };
+
+    const result: RatingsResult = {
+      imdb_id: externalIds.imdb_id,
+      imdb_rating: ratings.imdb,
+      rt_rating: ratings.rt,
+      metacritic_rating: ratings.metacritic,
+    };
+
+    db.prepare(
+      `INSERT INTO film_ratings (tmdb_id, type, imdb_id, imdb_rating, rt_rating, metacritic_rating)
+       VALUES (?, ?, ?, ?, ?, ?)
+       ON CONFLICT(tmdb_id, type) DO UPDATE SET
+         imdb_id = excluded.imdb_id,
+         imdb_rating = excluded.imdb_rating,
+         rt_rating = excluded.rt_rating,
+         metacritic_rating = excluded.metacritic_rating,
+         last_updated = datetime('now')`,
+    ).run(tmdbId, type, result.imdb_id, result.imdb_rating, result.rt_rating, result.metacritic_rating);
+
+    return result;
+  } catch (e) {
+    console.warn(`Ratings enrichment failed for ${type}/${tmdbId}`, e);
+    return { imdb_id: null, imdb_rating: null, rt_rating: null, metacritic_rating: null };
+  }
 }
 
 export function getFilmRow(tmdbId: number): FilmRow | undefined {

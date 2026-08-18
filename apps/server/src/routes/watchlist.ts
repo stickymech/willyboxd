@@ -11,7 +11,8 @@ const auth = requireAuth as unknown as (c: Context, next: Next) => Promise<void>
 const WATCHLIST_SELECT = `
   SELECT w.id, w.user_id, w.film_id, w.created_at,
          f.tmdb_id, f.title, f.type, f.poster_path, f.backdrop_path, f.overview,
-         f.release_date, f.first_air_date, f.vote_average, f.genres_json
+         f.release_date, f.first_air_date, f.vote_average, f.genres_json,
+         f.imdb_id, f.imdb_rating, f.rt_rating, f.metacritic_rating
   FROM watchlist w
   JOIN films f ON f.tmdb_id = w.film_id
 `;

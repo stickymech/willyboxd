@@ -43,10 +43,29 @@ const migrations: { name: string; sql: string }[] = [
         first_air_date TEXT,
         runtime INTEGER,
         vote_average REAL,
+        imdb_id TEXT,
+        imdb_rating REAL,
+        rt_rating REAL,
+        metacritic_rating REAL,
         genres_json TEXT,
         credits_json TEXT,
         images_json TEXT,
         last_updated TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `,
+  },
+  {
+    name: "init_film_ratings",
+    sql: `
+      CREATE TABLE IF NOT EXISTS film_ratings (
+        tmdb_id INTEGER NOT NULL,
+        type TEXT NOT NULL CHECK(type IN ('movie', 'tv')),
+        imdb_id TEXT,
+        imdb_rating REAL,
+        rt_rating REAL,
+        metacritic_rating REAL,
+        last_updated TEXT NOT NULL DEFAULT (datetime('now')),
+        PRIMARY KEY (tmdb_id, type)
       )
     `,
   },
@@ -209,6 +228,15 @@ const migrations: { name: string; sql: string }[] = [
 for (const migration of migrations) {
   db.exec(migration.sql);
 }
+
+const filmsColumns = (db.prepare("SELECT name FROM pragma_table_info('films')").all() as { name: string }[]).map(
+  (c) => c.name
+);
+
+if (!filmsColumns.includes("imdb_id")) db.exec("ALTER TABLE films ADD COLUMN imdb_id TEXT");
+if (!filmsColumns.includes("imdb_rating")) db.exec("ALTER TABLE films ADD COLUMN imdb_rating REAL");
+if (!filmsColumns.includes("rt_rating")) db.exec("ALTER TABLE films ADD COLUMN rt_rating REAL");
+if (!filmsColumns.includes("metacritic_rating")) db.exec("ALTER TABLE films ADD COLUMN metacritic_rating REAL");
 
 export { db };
 export default db;

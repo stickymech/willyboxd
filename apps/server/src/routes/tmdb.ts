@@ -1,5 +1,8 @@
 import { Hono } from "hono";
 import { tmdbService } from "../services/tmdb";
+import { enrichRatings, persistFilmDetail } from "../services/films";
+
+const MAX_RATINGS_IDS = 10;
 
 export const tmdbRoutes = (app: Hono) => {
   app.get("/films/search", async (c) => {
@@ -57,6 +60,37 @@ export const tmdbRoutes = (app: Hono) => {
     }
   });
 
+  app.get("/films/ratings", async (c) => {
+    const ids = c.req.query("ids") || "";
+    const entries = ids
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+      .slice(0, MAX_RATINGS_IDS);
+
+    const ratings: Record<string, Record<string, string | number>> = {};
+
+    for (const entry of entries) {
+      const [rawId, type] = entry.split(":");
+      const id = parseInt(rawId, 10);
+      if (isNaN(id) || (type !== "movie" && type !== "tv")) continue;
+
+      const result = await enrichRatings(id, type);
+      if (result.imdb_id === null && result.imdb_rating === null && result.rt_rating === null && result.metacritic_rating === null) {
+        continue;
+      }
+
+      const omitted: Record<string, string | number> = {};
+      if (result.imdb_id !== null) omitted.imdb_id = result.imdb_id;
+      if (result.imdb_rating !== null) omitted.imdb_rating = result.imdb_rating;
+      if (result.rt_rating !== null) omitted.rt_rating = result.rt_rating;
+      if (result.metacritic_rating !== null) omitted.metacritic_rating = result.metacritic_rating;
+      ratings[rawId] = omitted;
+    }
+
+    return c.json({ ratings });
+  });
+
   app.get("/films/:id", async (c) => {
     const id = parseInt(c.req.param("id"));
     const type = (c.req.query("type") as "movie" | "tv") || "movie";
@@ -67,6 +101,11 @@ export const tmdbRoutes = (app: Hono) => {
 
     try {
       const film = await tmdbService.getDetail(id, type);
+      try {
+        persistFilmDetail(film);
+      } catch (e) {
+        console.warn(`Failed to persist film ${type}/${id}`, e);
+      }
       return c.json({ film });
     } catch {
       return c.json({ error: "Failed to fetch film details" }, 500);
