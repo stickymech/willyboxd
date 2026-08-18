@@ -51,4 +51,4 @@
 - [ ] 6.2 Manual QA: scoreless title (e.g. We Are Aliens) shows badge on Home after enrich; rated titles unchanged; no regressions
 - [ ] 6.3 Create GitHub issue, push `card-ratings` branch, open PR with `Fixes #…`, verify CI after merge
 - [ ] 6.4 Archive the OpenSpec change (`openspec-archive-change`) and confirm main specs synced
-- [ ] 6.5 Add `scripts/qa-card-ratings.sh` (repo convention, modeled on `scripts/qa-embedded-trailers.sh`): static greps + targeted vitest + manual steps
+- [x] 6.5 Add `scripts/qa-card-ratings.sh` (repo convention, modeled on `scripts/qa-embedded-trailers.sh`): static greps + targeted vitest + manual steps
