@@ -62,6 +62,7 @@ export const API_ENDPOINTS = {
     anime: "/films/anime",
     detail: (id: number) => `/films/${id}`,
     recommendations: (id: number) => `/films/${id}/recommendations`,
+    ratings: (ids: string[]) => `/films/ratings?ids=${ids.join(",")}`,
   },
   diary: {
     list: "/diary",

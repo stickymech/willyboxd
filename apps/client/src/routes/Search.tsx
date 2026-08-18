@@ -5,6 +5,7 @@ import { apiFetch, API_ENDPOINTS } from "../lib/api";
 import type { MediaItem } from "@willyboxd/shared";
 import { FilmCard } from "../components/FilmCard";
 import { Header } from "../components/Header";
+import { useCardRatings } from "../hooks/useCardRatings";
 
 export function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -22,6 +23,8 @@ export function Search() {
     staleTime: 5 * 60 * 1000,
     enabled: !!query,
   });
+
+  const ratings = useCardRatings(data?.results);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +62,7 @@ export function Search() {
         ) : data && data.results?.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
             {data.results.map((film) => (
-              <FilmCard key={film.id} film={film} />
+              <FilmCard key={film.id} film={{ ...film, ...ratings[`${film.id}:${film.type}`] }} />
             ))}
           </div>
         ) : query ? (

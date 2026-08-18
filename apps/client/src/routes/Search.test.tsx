@@ -28,6 +28,10 @@ const naruto: MediaItem = {
   original_language: "ja",
   vote_average: 8,
   genre_ids: [16],
+  imdb_id: null,
+  imdb_rating: null,
+  rt_rating: null,
+  metacritic_rating: null,
 };
 
 const mockApi = vi.mocked(apiFetch);
@@ -79,5 +83,35 @@ describe("Search", () => {
     await userEvent.click(screen.getByRole("button", { name: "Search" }));
 
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith("/films/search?q=bleach"));
+  });
+
+  it("enriches unrated search results from the ratings endpoint", async () => {
+    const unrated: MediaItem = { ...naruto, id: 9, title: "We Are Aliens", vote_average: 0 };
+    mockApi.mockImplementation(async (path: string) => {
+      if (String(path).startsWith("/films/search")) return { results: [unrated] };
+      if (String(path).startsWith("/films/ratings")) {
+        return { ratings: { "9:tv": { imdb_id: "tt3703338", imdb_rating: 7.7, rt_rating: 64, metacritic_rating: null } } };
+      }
+      return { results: [] };
+    });
+
+    renderSearch(["/?q=aliens"]);
+
+    expect(await screen.findByText("We Are Aliens")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("img", { name: "4 out of 5 stars" })).toBeInTheDocument());
+  });
+
+  it("leaves unrated cards scoreless when the ratings request fails", async () => {
+    const unrated: MediaItem = { ...naruto, id: 10, title: "No Score Film", vote_average: 0 };
+    mockApi.mockImplementation(async (path: string) => {
+      if (String(path).startsWith("/films/search")) return { results: [unrated] };
+      if (String(path).startsWith("/films/ratings")) throw new Error("boom");
+      return { results: [] };
+    });
+
+    renderSearch(["/?q=nope"]);
+
+    expect(await screen.findByText("No Score Film")).toBeInTheDocument();
+    expect(screen.queryByText(/★/)).not.toBeInTheDocument();
   });
 });

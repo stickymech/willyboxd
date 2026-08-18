@@ -38,6 +38,10 @@ const watchlistItem: WatchlistEntry = {
     original_language: "en",
     vote_average: 8.4,
     genre_ids: [],
+    imdb_id: null,
+    imdb_rating: null,
+    rt_rating: null,
+    metacritic_rating: null,
   },
   created_at: "2024-01-01 00:00:00",
 };
@@ -58,6 +62,10 @@ const inceptionItem: WatchlistEntry = {
     original_language: "en",
     vote_average: 8.4,
     genre_ids: [],
+    imdb_id: null,
+    imdb_rating: null,
+    rt_rating: null,
+    metacritic_rating: null,
   },
   created_at: "2024-01-02 00:00:00",
 };
