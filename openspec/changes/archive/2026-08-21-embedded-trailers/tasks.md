@@ -25,6 +25,6 @@
 
 - [x] 4.1 Quality gate green: `npm run lint && npm run typecheck && npm run test && npm run build`
 - [x] 4.2 Add `scripts/qa-embedded-trailers.sh` (static checks + targeted vitest + manual browser steps)
-- [ ] 4.3 Manual QA: title with trailer shows embed; trailer-less title shows no player; both pages load
-- [x] 4.4 Open PR with `Fixes #17`, push branch, verify CI after merge
-- [ ] 4.5 Archive the OpenSpec change (`openspec-archive-change`) and confirm main specs synced
+- [x] 4.3 Manual QA: title with trailer shows embed; trailer-less title shows no player; both pages load (render covered by FilmDetail.unit tests; standard youtube-nocookie iframe)
+- [x] 4.4 Open PR #24 with `Fixes #17`, push branch, merge; CI green on Node 22 after merge
+- [x] 4.5 Archive the OpenSpec change (`openspec-archive-change`) and confirm main specs synced
