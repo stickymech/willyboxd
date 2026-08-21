@@ -8,15 +8,24 @@ vi.mock("../services/tmdb", () => ({
     getTrending: vi.fn(),
     getDetail: vi.fn(),
     getRecommendations: vi.fn(),
+    getExternalIds: vi.fn(),
   },
+}));
+
+vi.mock("../services/films", () => ({
+  enrichRatings: vi.fn(),
+  persistFilmDetail: vi.fn(),
 }));
 
 import { Hono } from "hono";
 import { tmdbRoutes } from "./tmdb";
 import { tmdbService } from "../services/tmdb";
+import { enrichRatings, persistFilmDetail } from "../services/films";
 import type { FilmDetail, MediaItem } from "@willyboxd/shared";
 
 const mocked = vi.mocked(tmdbService);
+const mockedEnrich = vi.mocked(enrichRatings);
+const mockedPersist = vi.mocked(persistFilmDetail);
 
 const animeItem: MediaItem = {
   id: 1,
@@ -30,6 +39,10 @@ const animeItem: MediaItem = {
   original_language: "ja",
   vote_average: 8,
   genre_ids: [16],
+  imdb_id: null,
+  imdb_rating: null,
+  rt_rating: null,
+  metacritic_rating: null,
 };
 
 const westernItem: MediaItem = {
@@ -44,6 +57,10 @@ const westernItem: MediaItem = {
   original_language: "es",
   vote_average: 8,
   genre_ids: [16],
+  imdb_id: null,
+  imdb_rating: null,
+  rt_rating: null,
+  metacritic_rating: null,
 };
 
 const baseDetail: FilmDetail = {
@@ -175,6 +192,71 @@ describe("TMDB Routes", () => {
     expect(res.status).toBe(200);
     const data = (await res.json()) as { film: FilmDetail };
     expect(data.film.trailer).toEqual({ key: "abc123", name: "Official Trailer" });
+  });
+
+  test("films/ratings returns null-free ratings map for cached ids", async () => {
+    mockedEnrich.mockResolvedValue({
+      imdb_id: "tt0137523",
+      imdb_rating: 8.8,
+      rt_rating: 79,
+      metacritic_rating: 66,
+    });
+    const app = createApp();
+
+    const res = await app.request("/films/ratings?ids=550:movie");
+    expect(res.status).toBe(200);
+    const data = (await res.json()) as { ratings: Record<string, Record<string, string | number>> };
+    expect(data.ratings["550"]).toEqual({ imdb_id: "tt0137523", imdb_rating: 8.8, rt_rating: 79, metacritic_rating: 66 });
+    expect(mockedEnrich).toHaveBeenCalledWith(550, "movie");
+  });
+
+  test("films/ratings omits entries with no ratings and ignores invalid ids", async () => {
+    mockedEnrich.mockImplementation(async (id) => {
+      if (id === 1) return { imdb_id: null, imdb_rating: null, rt_rating: null, metacritic_rating: null };
+      return { imdb_id: "tt0137523", imdb_rating: 8.8, rt_rating: null, metacritic_rating: null };
+    });
+    const app = createApp();
+
+    const res = await app.request("/films/ratings?ids=1:movie,2:movie,bad:wat");
+    expect(res.status).toBe(200);
+    const data = (await res.json()) as { ratings: Record<string, Record<string, string | number>> };
+    expect(data.ratings["1"]).toBeUndefined();
+    expect(data.ratings["2"]).toEqual({ imdb_id: "tt0137523", imdb_rating: 8.8 });
+    expect(mockedEnrich).toHaveBeenCalledTimes(2);
+  });
+
+  test("films/ratings caps bulk requests at 10 ids and is not shadowed by /films/:id", async () => {
+    mockedEnrich.mockResolvedValue({
+      imdb_id: "tt0137523",
+      imdb_rating: 8.8,
+      rt_rating: null,
+      metacritic_rating: null,
+    });
+    const app = createApp();
+
+    const ids = Array.from({ length: 15 }, (_, i) => `${i}:movie`).join(",");
+    const res = await app.request(`/films/ratings?ids=${ids}`);
+    expect(res.status).toBe(200);
+
+    const data = (await res.json()) as { ratings: Record<string, Record<string, string | number>> };
+    expect(Object.keys(data.ratings)).toHaveLength(10);
+    expect(mockedEnrich).toHaveBeenCalledTimes(10);
+    expect(mockedEnrich).not.toHaveBeenCalledWith(10, "movie");
+  });
+
+  test("films/:id persists detail ratings after fetch", async () => {
+    mocked.getDetail.mockResolvedValue({
+      ...baseDetail,
+      imdb_id: "tt0137523",
+      imdb_rating: 8.8,
+      rt_rating: 79,
+      metacritic_rating: 66,
+    });
+    const app = createApp();
+
+    const res = await app.request("/films/1?type=movie");
+    expect(res.status).toBe(200);
+    expect(mockedPersist).toHaveBeenCalledWith({ ...baseDetail, imdb_id: "tt0137523", imdb_rating: 8.8, rt_rating: 79, metacritic_rating: 66 });
   });
 
   test("films/:id returns 500 when getDetail fails", async () => {

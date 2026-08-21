@@ -24,6 +24,10 @@ const naruto: MediaItem = {
   original_language: "ja",
   vote_average: 8,
   genre_ids: [16],
+  imdb_id: null,
+  imdb_rating: null,
+  rt_rating: null,
+  metacritic_rating: null,
 };
 
 const bleach: MediaItem = {
@@ -38,6 +42,10 @@ const bleach: MediaItem = {
   original_language: "ja",
   vote_average: 7,
   genre_ids: [16],
+  imdb_id: null,
+  imdb_rating: null,
+  rt_rating: null,
+  metacritic_rating: null,
 };
 
 const mockApi = vi.mocked(apiFetch);

@@ -231,6 +231,10 @@ function normalizeMediaItem(item: TmdbMediaItem): MediaItem {
     original_language: item.original_language || null,
     vote_average: item.vote_average,
     genre_ids: item.genre_ids,
+    imdb_id: null,
+    imdb_rating: null,
+    rt_rating: null,
+    metacritic_rating: null,
   };
 }
 
@@ -377,6 +381,15 @@ export const tmdbService = {
         created_at: r.created_at,
       })),
     };
+  },
+
+  async getExternalIds(id: number, type: "movie" | "tv"): Promise<TmdbExternalIds> {
+    try {
+      return await fetchFromApi<TmdbExternalIds>(`${type}/${id}/external_ids`);
+    } catch (e) {
+      console.warn(`External IDs unavailable for ${type}/${id}`, e);
+      return { id, imdb_id: null };
+    }
   },
 
   async getRecommendations(id: number, type: "movie" | "tv"): Promise<{ results: MediaItem[] }> {

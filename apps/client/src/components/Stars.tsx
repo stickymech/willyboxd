@@ -1,6 +1,7 @@
 const STAR = "★";
 
 const SIZE_CLASSES = {
+  xs: "text-xs",
   sm: "text-lg",
   md: "text-2xl",
   lg: "text-3xl",
@@ -8,7 +9,7 @@ const SIZE_CLASSES = {
 
 interface StarsProps {
   value: number;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   className?: string;
   label?: string;
 }

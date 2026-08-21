@@ -64,6 +64,10 @@ export function toHundredStarRating(value: number): number {
   return value / 20;
 }
 
+export function toHalfStar(value: number): number {
+  return Math.round(value * 2) / 2;
+}
+
 const REVIEW_SOURCE_NAMES: Record<string, string> = {
   "themoviedb.org": "TMDB",
   "imdb.com": "IMDb",
@@ -106,11 +110,11 @@ export function ratingLabel(rating: number): string {
   const labels: Record<number, string> = {
     0.5: "½",
     1: "★",
-    1.5: "½½",
+    1.5: "★½",
     2: "★★",
-    2.5: "★½",
+    2.5: "★★½",
     3: "★★★",
-    3.5: "★★½",
+    3.5: "★★★½",
     4: "★★★★",
     4.5: "★★★★½",
     5: "★★★★★",

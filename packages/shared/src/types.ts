@@ -10,6 +10,10 @@ export type MediaItem = {
   original_language: string | null;
   vote_average: number;
   genre_ids: number[];
+  imdb_id: string | null;
+  imdb_rating: number | null;
+  rt_rating: number | null;
+  metacritic_rating: number | null;
 };
 
 export type Genre = {

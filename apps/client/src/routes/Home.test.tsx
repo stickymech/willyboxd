@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Home } from "./Home";
@@ -27,6 +27,10 @@ const animeItem: MediaItem = {
   original_language: "ja",
   vote_average: 9,
   genre_ids: [16],
+  imdb_id: null,
+  imdb_rating: null,
+  rt_rating: null,
+  metacritic_rating: null,
 };
 
 const topAnimeItem: MediaItem = {
@@ -41,6 +45,10 @@ const topAnimeItem: MediaItem = {
   original_language: "ja",
   vote_average: 9,
   genre_ids: [16],
+  imdb_id: null,
+  imdb_rating: null,
+  rt_rating: null,
+  metacritic_rating: null,
 };
 
 const mockApi = vi.mocked(apiFetch);
@@ -91,6 +99,48 @@ describe("Home", () => {
     renderHome();
 
     expect(screen.getByRole("combobox", { name: "Search films and TV" })).toBeInTheDocument();
+  });
+
+  it("enriches an unrated title with IMDb ratings from the ratings endpoint", async () => {
+    const unrated: MediaItem = {
+      ...animeItem,
+      id: 7,
+      title: "We Are Aliens",
+      vote_average: 0,
+    };
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/anime?time=week") return { results: [unrated] };
+      if (path === "/films/anime") return { results: [] };
+      if (String(path).startsWith("/films/ratings")) {
+        return { ratings: { "7:tv": { imdb_id: "tt3703338", imdb_rating: 7.7, rt_rating: 64, metacritic_rating: null } } };
+      }
+      return { results: [] };
+    });
+
+    renderHome();
+
+    expect(await screen.findByText("We Are Aliens")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("img", { name: "4 out of 5 stars" })).toBeInTheDocument());
+  });
+
+  it("keeps cards scoreless when the ratings request fails", async () => {
+    const unrated: MediaItem = {
+      ...animeItem,
+      id: 8,
+      title: "No Score Film",
+      vote_average: 0,
+    };
+    mockApi.mockImplementation(async (path: string) => {
+      if (path === "/films/anime?time=week") return { results: [unrated] };
+      if (path === "/films/anime") return { results: [] };
+      if (String(path).startsWith("/films/ratings")) throw new Error("boom");
+      return { results: [] };
+    });
+
+    renderHome();
+
+    expect(await screen.findByText("No Score Film")).toBeInTheDocument();
+    expect(screen.queryByText(/★/)).not.toBeInTheDocument();
   });
 
   it("shows an error with retry instead of infinite loading when a section fails", async () => {

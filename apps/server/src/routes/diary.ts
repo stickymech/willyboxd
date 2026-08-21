@@ -12,7 +12,8 @@ const DIARY_SELECT = `
   SELECT d.id, d.user_id, d.film_id, d.watched_date, d.rating, d.review, d.rewatch,
          d.tags_json, d.created_at, d.updated_at,
          f.tmdb_id, f.title, f.type, f.poster_path, f.backdrop_path, f.overview,
-         f.release_date, f.first_air_date, f.vote_average, f.genres_json
+         f.release_date, f.first_air_date, f.vote_average, f.genres_json,
+         f.imdb_id, f.imdb_rating, f.rt_rating, f.metacritic_rating
   FROM diary_entries d
   JOIN films f ON f.tmdb_id = d.film_id
 `;
