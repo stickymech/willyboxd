@@ -41,6 +41,8 @@ npm run dev
 - Client: http://localhost:5173
 - Server: http://localhost:3000/api
 
+> **Local LAN beta:** want to share the app with a family member over your home Wi‑Fi (e.g. on their iPhone)? See [`docs/BETA.md`](docs/BETA.md) for a step‑by‑step guide, including `NODE_ENV=development` + a `CLIENT_URL` point so auth cookies work on plain HTTP, and how to give them a separate empty database.
+
 ### Development Commands
 
 ```bash
@@ -68,18 +70,23 @@ willyboxd/
 ## Features
 
 ### Currently Implemented
-- **Authentication**: Register, login, logout, session management
-- **Film Discovery**: Search (movies + TV), popular, trending
-- **Film Details**: Posters, cast, crew, images, runtime, genres
+- **Authentication**: Register, login, logout, session cookies, password change, avatar upload, settings page
+- **Film Discovery**: Universal search (movies + TV), popular, trending, and anime feeds
+- **Film Details**: Posters, cast/crew, images, runtime, genres, tagline, overview, YouTube **trailers**
+- **Critic Ratings**: IMDb, Rotten Tomatoes & Metacritic scorecards on the detail page; half‑star rating **badges on film cards** (TMDB → IMDb → RT → Metacritic fallback via a bulk `/films/ratings` endpoint + OMDB)
+- **Reviews**: TMDB reviews rendered on the detail page with author avatar + source label (e.g. "via IMDb")
 - **Image Proxy**: Backend image caching to conserve TMDB API quota
+- **Diary**: Log films with watched date, half‑star rating, review, rewatch flag, tags; list / filter / edit / delete
+- **Watchlist**: Add, remove, list, and filter films
+- **Theming**: Single fixed Linear palette via semantic CSS tokens; `.btn-primary`/`.btn-secondary` classes
 - **Branding**: "clapperboard at attention" product mark — favicon, header + auth-page logo, PWA manifest/launcher icons, OG social meta
+- **Deployable**: `docker-compose.yml` for client + server; SQLite DB + image cache under `data/`
 
-### Roadmap
-- Diary / film logging with ratings and reviews
-- Watchlist management
-- Custom lists with drag-drop ranking
-- User profiles and social features
+### Roadmap (not yet built — stubs return `Not implemented`)
+- Custom lists with drag‑drop ranking
+- Social features (profiles, follow, activity feed)
 - Statistics dashboard
+- Anime mode refinements
 
 ## License
 
