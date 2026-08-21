@@ -18,6 +18,7 @@ export type Genre = {
 };
 
 export type FilmDetail = MediaItem & {
+  vote_count: number;
   runtime: number | null;
   budget: number | null;
   revenue: number | null;
@@ -38,6 +39,7 @@ export type FilmDetail = MediaItem & {
   imdb_rating: number | null;
   rt_rating: number | null;
   metacritic_rating: number | null;
+  trailer: { key: string; name: string | null } | null;
   reviews: Review[];
 };
 

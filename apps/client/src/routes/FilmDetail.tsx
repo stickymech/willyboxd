@@ -216,7 +216,7 @@ export function FilmDetail() {
                 {film.release_date?.slice(0, 4)} • {film.type === "movie" ? "Film" : "TV Series"}
               </p>
               <div className="flex items-center gap-2 mt-3">
-                <Stars value={toStarRating(film.vote_average)} />
+                {film.vote_count > 0 && <Stars value={toStarRating(film.vote_average)} />}
               </div>
               {film.imdb_rating !== null && (
                 <div className="flex items-center gap-2 mt-1.5">
@@ -284,6 +284,18 @@ export function FilmDetail() {
                 </Link>{" "}
                 to add this to your watchlist.
               </p>
+            )}
+
+            {film.trailer && (
+              <div className="mt-6 aspect-video max-w-md">
+                <iframe
+                  src={`https://www.youtube-nocookie.com/embed/${film.trailer.key}`}
+                  title={film.trailer.name ?? "Trailer"}
+                  className="w-full h-full rounded-lg ring-1 ring-white/10"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
             )}
           </div>
 

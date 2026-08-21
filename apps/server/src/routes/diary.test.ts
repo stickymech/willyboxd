@@ -35,6 +35,7 @@ const filmDetail: FilmDetail = {
   first_air_date: null,
   original_language: "en",
   vote_average: 8.4,
+  vote_count: 1000,
   genre_ids: [18, 53],
   runtime: 139,
   budget: 0,
@@ -50,6 +51,7 @@ const filmDetail: FilmDetail = {
   imdb_rating: null,
   rt_rating: null,
   metacritic_rating: null,
+  trailer: null,
   reviews: [],
 };
 

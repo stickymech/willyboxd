@@ -227,6 +227,9 @@ describe("TMDB Service", () => {
       if (path.endsWith("/images")) {
         return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 1, backdrops: [], posters: [] }) };
       }
+      if (path.endsWith("/videos")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ results: [] }) };
+      }
       return {
         ok: true,
         status: 200,
@@ -261,6 +264,9 @@ describe("TMDB Service", () => {
       if (path.endsWith("/images")) {
         return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 3, backdrops: [], posters: [] }) };
       }
+      if (path.endsWith("/videos")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ results: [] }) };
+      }
       return {
         ok: true,
         status: 200,
@@ -292,6 +298,9 @@ describe("TMDB Service", () => {
       }
       if (path.endsWith("/images")) {
         return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 2, backdrops: [], posters: [] }) };
+      }
+      if (path.endsWith("/videos")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ results: [] }) };
       }
       return {
         ok: true,
@@ -340,6 +349,9 @@ describe("TMDB Service", () => {
       if (path.endsWith("/images")) {
         return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 4, backdrops: [], posters: [] }) };
       }
+      if (path.endsWith("/videos")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ results: [] }) };
+      }
       return {
         ok: true,
         status: 200,
@@ -375,6 +387,9 @@ describe("TMDB Service", () => {
       if (path.endsWith("/images")) {
         return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 5, backdrops: [], posters: [] }) };
       }
+      if (path.endsWith("/videos")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ results: [] }) };
+      }
       return {
         ok: true,
         status: 200,
@@ -389,6 +404,143 @@ describe("TMDB Service", () => {
     expect(detail.imdb_rating).toBeNull();
     expect(detail.rt_rating).toBeNull();
     expect(detail.metacritic_rating).toBeNull();
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  test("getDetail maps the first YouTube trailer from videos", async () => {
+    fetchMock.mockImplementation(async (url: string) => {
+      const path = url.split("?")[0];
+      if (path.endsWith("/videos")) {
+        return {
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          json: async () => ({
+            results: [
+              { key: "teaser1", name: "Teaser", site: "YouTube", type: "Teaser" },
+              { key: "trailer1", name: "Official Trailer", site: "YouTube", type: "Trailer" },
+              { key: "clip1", name: "Clip", site: "YouTube", type: "Clip" },
+            ],
+          }),
+        };
+      }
+      if (path.endsWith("/reviews")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ results: [] }) };
+      }
+      if (path.endsWith("/credits")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 6, cast: [], crew: [] }) };
+      }
+      if (path.endsWith("/images")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 6, backdrops: [], posters: [] }) };
+      }
+      return {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        json: async () => ({ id: 6, title: "Film", overview: "", poster_path: null, backdrop_path: null, genres: [], vote_average: 8 }),
+      };
+    });
+
+    const detail = await tmdbService.getDetail(6, "movie");
+
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/movie/6/videos"));
+    expect(detail.trailer).toEqual({ key: "trailer1", name: "Official Trailer" });
+  });
+
+  test("getDetail resolves trailer as null when no YouTube trailer exists", async () => {
+    fetchMock.mockImplementation(async (url: string) => {
+      const path = url.split("?")[0];
+      if (path.endsWith("/videos")) {
+        return {
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          json: async () => ({
+            results: [
+              { key: "x1", name: "Teaser", site: "YouTube", type: "Teaser" },
+              { key: "x2", name: "Trailer", site: "Vimeo", type: "Trailer" },
+            ],
+          }),
+        };
+      }
+      if (path.endsWith("/reviews")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ results: [] }) };
+      }
+      if (path.endsWith("/credits")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 7, cast: [], crew: [] }) };
+      }
+      if (path.endsWith("/images")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 7, backdrops: [], posters: [] }) };
+      }
+      return {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        json: async () => ({ id: 7, title: "Film", overview: "", poster_path: null, backdrop_path: null, genres: [], vote_average: 8 }),
+      };
+    });
+
+    const detail = await tmdbService.getDetail(7, "movie");
+
+    expect(detail.trailer).toBeNull();
+  });
+
+  test("getDetail maps vote_count from the detail response", async () => {
+    fetchMock.mockImplementation(async (url: string) => {
+      const path = url.split("?")[0];
+      if (path.endsWith("/reviews")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ results: [] }) };
+      }
+      if (path.endsWith("/credits")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 9, cast: [], crew: [] }) };
+      }
+      if (path.endsWith("/images")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 9, backdrops: [], posters: [] }) };
+      }
+      if (path.endsWith("/videos")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ results: [] }) };
+      }
+      return {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        json: async () => ({ id: 9, title: "Film", overview: "", poster_path: null, backdrop_path: null, genres: [], vote_average: 7.5, vote_count: 42 }),
+      };
+    });
+
+    const detail = await tmdbService.getDetail(9, "movie");
+
+    expect(detail.vote_count).toBe(42);
+  });
+
+  test("getDetail resolves trailer as null when the videos call fails", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    fetchMock.mockImplementation(async (url: string) => {
+      const path = url.split("?")[0];
+      if (path.endsWith("/videos")) {
+        return { ok: false, status: 500, statusText: "Server Error", json: async () => ({}) };
+      }
+      if (path.endsWith("/reviews")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ results: [] }) };
+      }
+      if (path.endsWith("/credits")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 8, cast: [], crew: [] }) };
+      }
+      if (path.endsWith("/images")) {
+        return { ok: true, status: 200, statusText: "OK", json: async () => ({ id: 8, backdrops: [], posters: [] }) };
+      }
+      return {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        json: async () => ({ id: 8, title: "Film", overview: "", poster_path: null, backdrop_path: null, genres: [], vote_average: 8 }),
+      };
+    });
+
+    const detail = await tmdbService.getDetail(8, "movie");
+
+    expect(detail.trailer).toBeNull();
     expect(warnSpy).toHaveBeenCalled();
     warnSpy.mockRestore();
   });

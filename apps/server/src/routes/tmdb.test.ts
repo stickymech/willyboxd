@@ -57,6 +57,7 @@ const baseDetail: FilmDetail = {
   first_air_date: null,
   original_language: "en",
   vote_average: 8.4,
+  vote_count: 1000,
   genre_ids: [],
   runtime: 139,
   budget: null,
@@ -72,6 +73,7 @@ const baseDetail: FilmDetail = {
   imdb_rating: null,
   rt_rating: null,
   metacritic_rating: null,
+  trailer: null,
   reviews: [],
 };
 
@@ -159,6 +161,20 @@ describe("TMDB Routes", () => {
     const data = (await res.json()) as { film: FilmDetail };
     expect(data.film.reviews).toHaveLength(1);
     expect(data.film.reviews[0].author).toBe("A");
+    expect(data.film.trailer).toBeNull();
+  });
+
+  test("films/:id returns trailer when present", async () => {
+    mocked.getDetail.mockResolvedValue({
+      ...baseDetail,
+      trailer: { key: "abc123", name: "Official Trailer" },
+    });
+    const app = createApp();
+
+    const res = await app.request("/films/1?type=movie");
+    expect(res.status).toBe(200);
+    const data = (await res.json()) as { film: FilmDetail };
+    expect(data.film.trailer).toEqual({ key: "abc123", name: "Official Trailer" });
   });
 
   test("films/:id returns 500 when getDetail fails", async () => {
