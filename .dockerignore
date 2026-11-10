@@ -2,8 +2,12 @@ node_modules
 dist
 build
 data
+.turbo
+.env
+.env.local
 *.log
 npm-debug.log*
 .DS_Store
 .vscode
 .idea
+.git

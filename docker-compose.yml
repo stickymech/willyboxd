@@ -1,24 +1,20 @@
-version: "3.8"
-
 services:
-  server:
+  app:
     build:
       context: .
-      dockerfile: Dockerfile.server
+      dockerfile: Dockerfile
     env_file:
       - apps/server/.env
     ports:
       - "3000:3000"
     volumes:
       - ./data:/app/data
-    restart: unless-stopped
-
-  client:
-    build:
-      context: .
-      dockerfile: Dockerfile.client
-    env_file:
-      - apps/client/.env
-    ports:
-      - "5173:80"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     restart: unless-stopped

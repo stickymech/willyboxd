@@ -42,6 +42,8 @@ npm run dev
 - Server: http://localhost:3000/api
 
 > **Local LAN beta:** want to share the app with a family member over your home Wi‑Fi (e.g. on their iPhone)? See [`docs/BETA.md`](docs/BETA.md) for a step‑by‑step guide, including `NODE_ENV=development` + a `CLIENT_URL` point so auth cookies work on plain HTTP, and how to give them a separate empty database.
+>
+> **Home-server deployment:** see [`docs/DEPLOY.md`](docs/DEPLOY.md) for the single-container Docker setup, backups, and upgrades.
 
 ### Development Commands
 
@@ -79,7 +81,7 @@ willyboxd/
 - **Watchlist**: Add, remove, list, and filter films
 - **Theming**: Single fixed Linear palette via semantic CSS tokens; `.btn-primary`/`.btn-secondary` classes
 - **Branding**: "clapperboard at attention" product mark — favicon, header + auth-page logo, PWA manifest/launcher icons, OG social meta
-- **Deployable**: `docker-compose.yml` for client + server; SQLite DB under `data/`
+- **Deployable**: single-container `docker-compose.yml` — API + client on one port, SQLite DB + backups under `data/` (see [`docs/DEPLOY.md`](docs/DEPLOY.md))
 
 ### Roadmap (next up)
 - **Stats dashboard**: films watched, hours logged, average rating, top genres/years/decades
