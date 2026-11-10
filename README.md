@@ -79,13 +79,13 @@ willyboxd/
 - **Reviews**: TMDB reviews rendered on the detail page with author avatar + source label (e.g. "via IMDb")
 - **Diary**: Log films with watched date, half‑star rating, review, rewatch flag, tags; list / filter / edit / delete
 - **Watchlist**: Add, remove, list, and filter films
+- **Stats dashboard**: films, entries, hours, average rating, top genres, year/decade breakdowns
 - **Theming**: Single fixed Linear palette via semantic CSS tokens; `.btn-primary`/`.btn-secondary` classes
 - **Branding**: "clapperboard at attention" product mark — favicon, header + auth-page logo, PWA manifest/launcher icons, OG social meta
 - **Deployable**: single-container `docker-compose.yml` — API + client on one port, SQLite DB + backups under `data/` (see [`docs/DEPLOY.md`](docs/DEPLOY.md))
 
 ### Roadmap (next up)
-- **Stats dashboard**: films watched, hours logged, average rating, top genres/years/decades
-- **Custom lists**: family lists (e.g. "movie night") with drag‑drop ranking
+- **Custom lists**: family lists (e.g. "movie night") with drag‑drop ranking (issue #32)
 - **In‑app person pages**: cast cards link to a person view instead of TMDB (issue #18)
 - **UI refresh**: explore alternative visual themes for the detail/home pages (issue #19)
 
