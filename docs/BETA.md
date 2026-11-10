@@ -30,7 +30,6 @@ PORT=3000
 DATABASE_PATH=./data/willyboxd.db
 TMDB_API_KEY=your-real-tmdb-key
 OMDB_API_KEY=your-real-omdb-key           # optional, enables rating scorecards
-JWT_SECRET=a-random-32+char-secret-you-make-up
 ```
 
 > The server binds to `0.0.0.0` by default, so it is reachable from other devices on the LAN once `CLIENT_URL` matches the LAN origin. Run in `NODE_ENV=development` for the beta: cookies stay `SameSite=Strict` + `HttpOnly` (session stays safe) but are **not** `Secure`, so Safari/iOS will keep them sent over plain `http://`. (Switch to `NODE_ENV=production` + a TLS reverse proxy later if you want HTTPS.)
@@ -46,7 +45,7 @@ cd "$(dirname "$0")/../../.."        # repo root
 export DATABASE_PATH=./data/willyboxd-son.db
 export NODE_ENV=development
 export CLIENT_URL=http://<your-lan-ip>:5173
-node index.js
+npx tsx apps/server/src/index.ts
 ```
 
 Then they run `apps/server/start-son.sh`. The DB and per‑user films/ratings tables are created automatically on first request. Each person therefore has their own diary/watchlist.
@@ -101,7 +100,7 @@ In Safari on the phone: tap the **share** button → **Add to Home Screen**. Wil
 
 - **No cloud sync.** Everything lives on the machine running the server and only works while it's on and on the same network.
 - **Plain HTTP on the LAN** (no HTTPS). Fine for home; don't expose the port to the public internet.
-- **Custom lists, social (follow/feed), profile page, and stats dashboard** are not built yet (they return `Not implemented`). Diary + Watchlist are the way to track what's watched.
+- **Custom lists and the stats dashboard** are not built yet (they return `Not implemented`). Diary + Watchlist are the way to track what's watched. Social features are intentionally not planned for this app's 2–3 user household.
 - A **very obscure title** with no TMDB votes or OMDB ratings may briefly show no ★ badge — it caches once OMDB has data. This is harmless and rare.
 
 ## Troubleshooting

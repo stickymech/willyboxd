@@ -9,16 +9,16 @@ A personal/family film review app inspired by Letterboxd, hosted locally.
 | Frontend | Vite + React 18 + TypeScript + React Router v6 + Tailwind CSS |
 | Backend  | Hono + TypeScript               |
 | Database | SQLite (better-sqlite3)         |
-| Film Data| TMDB API + local caching        |
+| Film Data| TMDB + OMDB APIs + local caching|
 | Auth     | Cookie-based sessions + bcrypt  |
-| State    | TanStack Query + Zustand        |
+| State    | TanStack Query                  |
 | Testing  | Vitest                          |
 | Monorepo | Turborepo                       |
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js 20+
+- Node.js 22+
 - npm 10+
 - [TMDB API key](https://developer.themoviedb.org/docs) (free)
 
@@ -30,7 +30,7 @@ npm install
 
 # Configure environment
 cp apps/server/.env.example apps/server/.env
-# Edit apps/server/.env with your TMDB_API_KEY and JWT_SECRET
+# Edit apps/server/.env with your TMDB_API_KEY (and OMDB_API_KEY for IMDb/RT/Metacritic scorecards)
 
 cp apps/client/.env.example apps/client/.env
 
@@ -75,18 +75,21 @@ willyboxd/
 - **Film Details**: Posters, cast/crew, images, runtime, genres, tagline, overview, YouTube **trailers**
 - **Critic Ratings**: IMDb, Rotten Tomatoes & Metacritic scorecards on the detail page; half‑star rating **badges on film cards** (TMDB → IMDb → RT → Metacritic fallback via a bulk `/films/ratings` endpoint + OMDB)
 - **Reviews**: TMDB reviews rendered on the detail page with author avatar + source label (e.g. "via IMDb")
-- **Image Proxy**: Backend image caching to conserve TMDB API quota
 - **Diary**: Log films with watched date, half‑star rating, review, rewatch flag, tags; list / filter / edit / delete
 - **Watchlist**: Add, remove, list, and filter films
 - **Theming**: Single fixed Linear palette via semantic CSS tokens; `.btn-primary`/`.btn-secondary` classes
 - **Branding**: "clapperboard at attention" product mark — favicon, header + auth-page logo, PWA manifest/launcher icons, OG social meta
-- **Deployable**: `docker-compose.yml` for client + server; SQLite DB + image cache under `data/`
+- **Deployable**: `docker-compose.yml` for client + server; SQLite DB under `data/`
 
-### Roadmap (not yet built — stubs return `Not implemented`)
-- Custom lists with drag‑drop ranking
-- Social features (profiles, follow, activity feed)
-- Statistics dashboard
-- Anime mode refinements
+### Roadmap (next up)
+- **Stats dashboard**: films watched, hours logged, average rating, top genres/years/decades
+- **Custom lists**: family lists (e.g. "movie night") with drag‑drop ranking
+- **In‑app person pages**: cast cards link to a person view instead of TMDB (issue #18)
+- **UI refresh**: explore alternative visual themes for the detail/home pages (issue #19)
+
+### Not planned
+- **Social features** (follows, activity feed, likes, comments) — no value for a 2–3 user household; a read‑only profile page is the likely future shape.
+- **Anime mode refinements** — the universal search + anime feed cover the need for now.
 
 ## License
 
