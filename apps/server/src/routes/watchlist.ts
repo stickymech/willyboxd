@@ -1,12 +1,9 @@
 import { Hono } from "hono";
-import type { Context, Next } from "hono";
 import { v4 as uuidv4 } from "uuid";
 import { requireAuth } from "../middleware/auth";
 import { db } from "../db";
 import { syncFilm, rowToMediaItem, getFilmRow, type FilmRow } from "../services/films";
 import type { WatchlistEntry } from "@willyboxd/shared";
-
-const auth = requireAuth as unknown as (c: Context, next: Next) => Promise<void> | Response;
 
 const WATCHLIST_SELECT = `
   SELECT w.id, w.user_id, w.film_id, w.created_at,
@@ -28,7 +25,7 @@ function entryFromRow(row: FilmRow & { id: string; user_id: string; created_at: 
 }
 
 export const watchlistRoutes = (app: Hono) => {
-  app.get("/watchlist", auth, (c) => {
+  app.get("/watchlist", requireAuth, (c) => {
     const user = c.get("user")!;
     const rows = db
       .prepare(`${WATCHLIST_SELECT} WHERE w.user_id = ? ORDER BY w.created_at DESC`)
@@ -36,7 +33,7 @@ export const watchlistRoutes = (app: Hono) => {
     return c.json({ entries: rows.map(entryFromRow) });
   });
 
-  app.post("/watchlist/:filmId", auth, async (c) => {
+  app.post("/watchlist/:filmId", requireAuth, async (c) => {
     const user = c.get("user")!;
     const filmId = parseInt(c.req.param("filmId") ?? "");
     const type = (c.req.query("type") as "movie" | "tv") || "movie";
@@ -64,7 +61,7 @@ export const watchlistRoutes = (app: Hono) => {
     );
   });
 
-  app.delete("/watchlist/:filmId", auth, (c) => {
+  app.delete("/watchlist/:filmId", requireAuth, (c) => {
     const user = c.get("user")!;
     const filmId = parseInt(c.req.param("filmId") ?? "");
 

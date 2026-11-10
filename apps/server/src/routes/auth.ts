@@ -4,7 +4,8 @@ import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "../db";
 import { requireAuth, serializeCookie, clearCookie, parseCookies } from "../middleware/auth";
-import type { Context, Next } from "hono";
+import { parseJsonBody } from "../lib/json";
+import type { Context } from "hono";
 import type { Hono } from "hono";
 
 const BCRYPT_ROUNDS = 12;
@@ -36,8 +37,9 @@ function createSession(userId: string): string {
 
 export function registerAuthRoutes(app: Hono) {
   app.post("/auth/register", async (c: Context) => {
-    const body = await c.req.json();
-    const parsed = RegisterSchema.safeParse(body);
+    const parsedBody = await parseJsonBody(c);
+    if (!parsedBody.ok) return parsedBody.response;
+    const parsed = RegisterSchema.safeParse(parsedBody.value);
 
     if (!parsed.success) {
       return c.json({ error: "Validation failed", details: parsed.error.errors }, 400);
@@ -73,8 +75,9 @@ export function registerAuthRoutes(app: Hono) {
   });
 
   app.post("/auth/login", async (c: Context) => {
-    const body = await c.req.json();
-    const parsed = LoginSchema.safeParse(body);
+    const parsedBody = await parseJsonBody(c);
+    if (!parsedBody.ok) return parsedBody.response;
+    const parsed = LoginSchema.safeParse(parsedBody.value);
 
     if (!parsed.success) {
       return c.json({ error: "Validation failed", details: parsed.error.errors }, 400);
@@ -115,7 +118,7 @@ export function registerAuthRoutes(app: Hono) {
     });
   });
 
-  app.post("/auth/logout", requireAuth as unknown as (c: Context, next: Next) => Promise<void> | Response, async (c: Context) => {
+  app.post("/auth/logout", requireAuth, async (c: Context) => {
     const cookies = parseCookies(c.req.header("cookie"));
     const sessionId = cookies[SESSION_COOKIE_NAME];
 
@@ -138,11 +141,12 @@ export function registerAuthRoutes(app: Hono) {
 
   app.put(
     "/auth/me",
-    requireAuth as unknown as (c: Context, next: Next) => Promise<void> | Response,
+    requireAuth,
     async (c: Context) => {
       const user = c.get("user")!;
-      const body = await c.req.json();
-      const parsed = AvatarSchema.safeParse(body);
+      const parsedBody = await parseJsonBody(c);
+      if (!parsedBody.ok) return parsedBody.response;
+      const parsed = AvatarSchema.safeParse(parsedBody.value);
 
       if (!parsed.success) {
         return c.json({ error: "Validation failed", details: parsed.error.errors }, 400);
@@ -156,11 +160,12 @@ export function registerAuthRoutes(app: Hono) {
 
   app.put(
     "/auth/password",
-    requireAuth as unknown as (c: Context, next: Next) => Promise<void> | Response,
+    requireAuth,
     async (c: Context) => {
       const user = c.get("user")!;
-      const body = await c.req.json();
-      const parsed = ChangePasswordSchema.safeParse(body);
+      const parsedBody = await parseJsonBody(c);
+      if (!parsedBody.ok) return parsedBody.response;
+      const parsed = ChangePasswordSchema.safeParse(parsedBody.value);
 
       if (!parsed.success) {
         return c.json({ error: "Validation failed", details: parsed.error.errors }, 400);
@@ -187,7 +192,7 @@ export function registerAuthRoutes(app: Hono) {
 
   app.post(
     "/auth/avatar",
-    requireAuth as unknown as (c: Context, next: Next) => Promise<void> | Response,
+    requireAuth,
     async (c: Context) => {
       const user = c.get("user")!;
 

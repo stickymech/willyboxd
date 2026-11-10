@@ -1,12 +1,10 @@
 import { Hono } from "hono";
-import type { Context, Next } from "hono";
 import { v4 as uuidv4 } from "uuid";
 import { requireAuth } from "../middleware/auth";
+import { parseJsonBody } from "../lib/json";
 import { db } from "../db";
 import { syncFilm, rowToMediaItem, type FilmRow } from "../services/films";
 import { DiaryEntrySchema, DiaryUpdateSchema, type DiaryEntry } from "@willyboxd/shared";
-
-const auth = requireAuth as unknown as (c: Context, next: Next) => Promise<void> | Response;
 
 const DIARY_SELECT = `
   SELECT d.id, d.user_id, d.film_id, d.watched_date, d.rating, d.review, d.rewatch,
@@ -59,7 +57,7 @@ function getEntry(id: string, userId: string): DiaryEntry | undefined {
 }
 
 export const diaryRoutes = (app: Hono) => {
-  app.get("/diary", auth, (c) => {
+  app.get("/diary", requireAuth, (c) => {
     const user = c.get("user")!;
     const rows = db
       .prepare(`${DIARY_SELECT} WHERE d.user_id = ? ORDER BY d.watched_date DESC, d.created_at DESC`)
@@ -67,10 +65,11 @@ export const diaryRoutes = (app: Hono) => {
     return c.json({ entries: rows.map(entryFromRow) });
   });
 
-  app.post("/diary", auth, async (c) => {
+  app.post("/diary", requireAuth, async (c) => {
     const user = c.get("user")!;
-    const body = await c.req.json();
-    const parsed = DiaryEntrySchema.safeParse(body);
+    const parsedBody = await parseJsonBody(c);
+    if (!parsedBody.ok) return parsedBody.response;
+    const parsed = DiaryEntrySchema.safeParse(parsedBody.value);
 
     if (!parsed.success) {
       return c.json({ error: "Validation failed", details: parsed.error.errors }, 400);
@@ -89,7 +88,7 @@ export const diaryRoutes = (app: Hono) => {
     return c.json({ entry: getEntry(id, user.id) }, 201);
   });
 
-  app.get("/diary/:id", auth, (c) => {
+  app.get("/diary/:id", requireAuth, (c) => {
     const user = c.get("user")!;
     const entryId = c.req.param("id") ?? "";
     const entry = getEntry(entryId, user.id);
@@ -99,7 +98,7 @@ export const diaryRoutes = (app: Hono) => {
     return c.json({ entry });
   });
 
-  app.put("/diary/:id", auth, async (c) => {
+  app.put("/diary/:id", requireAuth, async (c) => {
     const user = c.get("user")!;
     const entryId = c.req.param("id") ?? "";
 
@@ -110,8 +109,9 @@ export const diaryRoutes = (app: Hono) => {
       return c.json({ error: "Diary entry not found" }, 404);
     }
 
-    const body = await c.req.json();
-    const parsed = DiaryUpdateSchema.safeParse(body);
+    const parsedBody = await parseJsonBody(c);
+    if (!parsedBody.ok) return parsedBody.response;
+    const parsed = DiaryUpdateSchema.safeParse(parsedBody.value);
     if (!parsed.success) {
       return c.json({ error: "Validation failed", details: parsed.error.errors }, 400);
     }
@@ -150,7 +150,7 @@ export const diaryRoutes = (app: Hono) => {
     return c.json({ entry: getEntry(entryId, user.id) });
   });
 
-  app.delete("/diary/:id", auth, (c) => {
+  app.delete("/diary/:id", requireAuth, (c) => {
     const user = c.get("user")!;
     const entryId = c.req.param("id") ?? "";
     const result = db

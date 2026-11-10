@@ -1,23 +1,21 @@
-import type { Context, Next } from "hono";
+import { createMiddleware } from "hono/factory";
 import { db } from "../db";
 import { SESSION_COOKIE_NAME } from "@willyboxd/shared";
 
-export interface AuthContext {
-  user: {
-    id: string;
-    email: string;
-    username: string;
-    avatar: string | null;
-  };
+export interface AuthUser {
+  id: string;
+  email: string;
+  username: string;
+  avatar: string | null;
 }
 
 declare module "hono" {
   interface ContextVariableMap {
-    user: AuthContext["user"] | null;
+    user: AuthUser | null;
   }
 }
 
-export async function authMiddleware(c: Context, next: Next) {
+export const authMiddleware = createMiddleware(async (c, next) => {
   const cookieHeader = c.req.header("cookie");
   const sessionId = parseCookies(cookieHeader)[SESSION_COOKIE_NAME];
 
@@ -58,15 +56,15 @@ export async function authMiddleware(c: Context, next: Next) {
   }
 
   await next();
-}
+});
 
-export function requireAuth(c: Context, next: Next) {
+export const requireAuth = createMiddleware(async (c, next) => {
   const user = c.get("user");
   if (!user) {
     return c.json({ error: "Authentication required" }, 401);
   }
-  return next();
-}
+  await next();
+});
 
 export function parseCookies(cookieHeader: string | undefined): Record<string, string> {
   const cookies: Record<string, string> = {};
@@ -74,8 +72,12 @@ export function parseCookies(cookieHeader: string | undefined): Record<string, s
 
   for (const cookie of cookieHeader.split(";")) {
     const [name, ...rest] = cookie.trim().split("=");
-    if (name && rest.length > 0) {
+    if (!name || rest.length === 0) continue;
+    try {
       cookies[name] = decodeURIComponent(rest.join("="));
+    } catch {
+      // A malformed percent-encoding shouldn't break every request.
+      cookies[name] = rest.join("=");
     }
   }
 
