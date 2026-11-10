@@ -32,6 +32,9 @@ export function Header() {
           <NavLink to="/watchlist" className={navLinkClass}>
             Watchlist
           </NavLink>
+          <NavLink to="/stats" className={navLinkClass}>
+            Stats
+          </NavLink>
 
           {isLoading ? null : user ? (
             <div className="flex items-center gap-3">

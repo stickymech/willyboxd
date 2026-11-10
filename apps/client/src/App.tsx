@@ -6,6 +6,7 @@ import { Search } from "./routes/Search";
 import { FilmDetail } from "./routes/FilmDetail";
 import { Diary } from "./routes/Diary";
 import { Watchlist } from "./routes/Watchlist";
+import { Stats } from "./routes/Stats";
 import { Settings } from "./routes/Settings";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
       <Route path="/films/:id" element={<FilmDetail />} />
       <Route path="/diary" element={<Diary />} />
       <Route path="/watchlist" element={<Watchlist />} />
+      <Route path="/stats" element={<Stats />} />
       <Route path="/settings" element={<Settings />} />
     </Routes>
   );

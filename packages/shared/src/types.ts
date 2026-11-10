@@ -157,6 +157,7 @@ export type Activity = {
 
 export type StatsOverview = {
   total_watched: number;
+  total_films: number;
   total_minutes: number;
   average_rating: number;
   genres: { name: string; count: number }[];
