@@ -4,92 +4,52 @@ import {
   type FilmDetail,
   type MediaItem,
 } from "@willyboxd/shared";
+import { createRateLimitedCache } from "../lib/rateLimited";
 import { omdbService } from "./omdb";
-
-interface TmdbCacheEntry {
-  data: unknown;
-  timestamp: number;
-}
 
 const API_KEY = process.env.TMDB_API_KEY || "";
 const BASE_URL = "https://api.themoviedb.org/3";
-const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 
 if (!API_KEY && process.env.NODE_ENV !== "test") {
   console.warn("⚠️  TMDB_API_KEY not set. Film search and details will not work.");
   console.warn("   Get a free key at https://developer.themoviedb.org/docs");
 }
 
-const cache = new Map<string, TmdbCacheEntry>();
-const requestQueue: Array<() => void> = [];
-let lastRequestTime = 0;
-let processing = false;
-
-function waitForRateLimit(): Promise<void> {
-  return new Promise((resolve) => {
-    const processQueue = () => {
-      const now = Date.now();
-      const wait = Math.max(0, TMDB_RATE_LIMIT_DELAY - (now - lastRequestTime));
-
-      setTimeout(() => {
-        lastRequestTime = Date.now();
-        const next = requestQueue.shift();
-        if (next) {
-          next();
-        } else {
-          processing = false;
-        }
-        resolve();
-      }, wait);
-    };
-
-    if (processing) {
-      requestQueue.push(processQueue);
-    } else {
-      processing = true;
-      processQueue();
-    }
-  });
-}
+const fetchCached = createRateLimitedCache<unknown>({
+  delay: TMDB_RATE_LIMIT_DELAY,
+  ttlMs: TMDB_CACHE_TTL_DAYS * 24 * 60 * 60 * 1000,
+});
 
 async function fetchFromApi<T>(path: string, query: Record<string, string | number> = {}): Promise<T> {
   const cacheKey = `${path}?${new URLSearchParams(query as Record<string, string>).toString()}`;
-  const cached = cache.get(cacheKey);
-  const now = Date.now();
 
-  if (cached && now - cached.timestamp < TMDB_CACHE_TTL_DAYS * 24 * 60 * 60 * 1000) {
-    return cached.data as T;
-  }
+  return fetchCached(cacheKey, async () => {
+    const params = new URLSearchParams({
+      api_key: API_KEY,
+      language: "en-US",
+      ...Object.fromEntries(Object.entries(query).map(([k, v]) => [k, String(v)])),
+    });
 
-  await waitForRateLimit();
+    const url = `${BASE_URL}/${path}?${params.toString()}`;
 
-  const params = new URLSearchParams({
-    api_key: API_KEY,
-    language: "en-US",
-    ...Object.fromEntries(Object.entries(query).map(([k, v]) => [k, String(v)])),
-  });
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const response = await fetch(url);
 
-  const url = `${BASE_URL}/${path}?${params.toString()}`;
+      if (response.ok) {
+        return (await response.json()) as T;
+      }
 
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const response = await fetch(url);
+      const retriable = response.status === 429 || response.status >= 500;
+      if (attempt === 0 && retriable) {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        continue;
+      }
 
-    if (response.ok) {
-      const data = (await response.json()) as T;
-      cache.set(cacheKey, { data, timestamp: now });
-      return data;
+      throw new Error(`TMDB API error: ${response.status} ${response.statusText}`);
     }
 
-    const retriable = response.status === 429 || response.status >= 500;
-    if (attempt === 0 && retriable) {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      continue;
-    }
-
-    throw new Error(`TMDB API error: ${response.status} ${response.statusText}`);
-  }
-
-  throw new Error("TMDB API error");
+    throw new Error("TMDB API error");
+  }) as Promise<T>;
 }
 
 export interface TmdbSearchResult {
@@ -401,10 +361,4 @@ export const tmdbService = {
     const result = await this.search(query, page);
     return result.results.filter((item) => item.media_type === "movie" || item.media_type === "tv").map(normalizeMediaItem);
   },
-
-  getImageProxyUrl(path: string): string {
-    return `/api/images${path}`;
-  },
 };
-
-export { IMAGE_BASE_URL };

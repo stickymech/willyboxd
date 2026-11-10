@@ -31,7 +31,6 @@ export const MAX_SESSIONS_PER_USER = 5;
 
 export const TMDB_RATE_LIMIT_DELAY = 250;
 export const TMDB_CACHE_TTL_DAYS = 7;
-export const TMDB_IMAGE_CACHE_TTL_DAYS = 30;
 
 export function getPosterUrl(path: string | null, size: keyof typeof POSTER_SIZES = "medium"): string | null {
   if (!path) return null;

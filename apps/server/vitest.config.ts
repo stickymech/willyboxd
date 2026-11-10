@@ -8,7 +8,6 @@ export default defineConfig({
       NODE_ENV: "test",
       DATABASE_PATH: "./data/test.db",
       TMDB_API_KEY: "test-key",
-      JWT_SECRET: "test-secret",
       CLIENT_URL: "http://localhost:5173",
     },
   },

@@ -10,7 +10,6 @@ vi.hoisted(() => {
   process.env.NODE_ENV = "test";
   process.env.DATABASE_PATH = "./data/test-diary.db";
   process.env.TMDB_API_KEY = "test-key";
-  process.env.JWT_SECRET = "test-secret";
   process.env.CLIENT_URL = "http://localhost:5173";
 });
 
