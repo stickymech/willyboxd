@@ -1,6 +1,6 @@
 import type { MediaItem } from "@willyboxd/shared";
 import { Link } from "react-router-dom";
-import { getPosterUrl, toHalfStar, toHundredStarRating, toStarRating } from "@willyboxd/shared";
+import { getPosterUrl, toHalfStar, toHundredStarRating, toStarRating, formatScore } from "@willyboxd/shared";
 import { Stars } from "./Stars";
 
 interface FilmCardProps {
@@ -41,8 +41,9 @@ export function FilmCard({ film }: FilmCardProps) {
           </div>
         )}
         {rating !== null && (
-          <div className="absolute top-1 right-1 bg-surface/80 backdrop-blur rounded-full px-1.5 py-0.5 text-xs text-accent">
+          <div className="absolute top-1 right-1 bg-surface/80 backdrop-blur rounded-full px-1.5 py-0.5 text-xs text-accent flex items-center gap-1">
             <Stars value={rating} size="xs" />
+            <span>{formatScore(rating)}</span>
           </div>
         )}
       </div>
